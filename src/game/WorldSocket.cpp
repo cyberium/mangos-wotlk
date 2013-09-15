@@ -17,8 +17,9 @@
  */
 
 #include "WorldSocket.h"
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
 #include "Common.h"
-
 #include "Util.h"
 #include "World.h"
 #include "WorldPacket.h"
@@ -31,10 +32,6 @@
 #include "WorldSocketMgr.h"
 #include "Log.h"
 #include "DBCStores.h"
-
-#include <chrono>
-#include <boost/bind.hpp>
-#include <boost/thread.hpp>
 
 #if defined( __GNUC__ )
 #pragma pack(1)
