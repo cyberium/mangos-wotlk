@@ -467,7 +467,6 @@
     <ClCompile Include="..\..\src\mangosd\Main.cpp" />
     <ClCompile Include="..\..\src\mangosd\Master.cpp" />
     <ClCompile Include="..\..\src\mangosd\RASocket.cpp" />
-    <ClCompile Include="..\..\src\mangosd\WorldRunnable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dep\include\gsoap\stdsoap2.h" />
@@ -477,7 +476,6 @@
     <ClInclude Include="..\..\src\mangosd\CliRunnable.h" />
     <ClInclude Include="..\..\src\mangosd\Master.h" />
     <ClInclude Include="..\..\src\mangosd\RASocket.h" />
-    <ClInclude Include="..\..\src\mangosd\WorldRunnable.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\mangosd\mangosd.rc" />

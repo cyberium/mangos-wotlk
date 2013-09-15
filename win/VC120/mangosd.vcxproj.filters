@@ -40,7 +40,6 @@
     <ClCompile Include="..\..\src\mangosd\soapC.cpp" />
     <ClCompile Include="..\..\src\mangosd\soapServer.cpp" />
     <ClCompile Include="..\..\dep\src\gsoap\stdsoap2.cpp" />
-    <ClCompile Include="..\..\src\mangosd\WorldRunnable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\mangosd\CliRunnable.h" />
@@ -50,7 +49,6 @@
     <ClInclude Include="..\..\src\mangosd\soapH.h" />
     <ClInclude Include="..\..\src\mangosd\soapStub.h" />
     <ClInclude Include="..\..\dep\include\gsoap\stdsoap2.h" />
-    <ClInclude Include="..\..\src\mangosd\WorldRunnable.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\mangosd\mangosd.rc" />
