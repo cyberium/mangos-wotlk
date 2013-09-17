@@ -465,8 +465,7 @@
     <ClCompile Include="..\..\src\mangosd\MaNGOSsoap.cpp" />
     <ClCompile Include="..\..\src\mangosd\CliRunnable.cpp" />
     <ClCompile Include="..\..\src\mangosd\Main.cpp" />
-    <ClCompile Include="..\..\src\mangosd\Master.cpp" />
-    <ClCompile Include="..\..\src\mangosd\RASocket.cpp" />
+    <ClCompile Include="..\..\src\mangosd\RemoteAdministration.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dep\include\gsoap\stdsoap2.h" />
@@ -474,8 +473,8 @@
     <ClInclude Include="..\..\src\mangosd\soapH.h" />
     <ClInclude Include="..\..\src\mangosd\MaNGOSsoap.h" />
     <ClInclude Include="..\..\src\mangosd\CliRunnable.h" />
-    <ClInclude Include="..\..\src\mangosd\Master.h" />
-    <ClInclude Include="..\..\src\mangosd\RASocket.h" />
+    <ClInclude Include="..\..\src\mangosd\FreezeDetector.h" />
+    <ClInclude Include="..\..\src\mangosd\RemoteAdministration.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\mangosd\mangosd.rc" />
