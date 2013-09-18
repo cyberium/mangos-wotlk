@@ -22,12 +22,10 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
 #include <chrono>
-
-#include "Network/Socket.h"
-
 #include "Common.h"
 #include "Auth/AuthCrypt.h"
 #include "Auth/BigNumber.h"
+#include "Network/Socket.h"
 
 class WorldPacket;
 class WorldSession;
@@ -84,22 +82,19 @@ public:
     /// Return the session key
     BigNumber& GetSessionKey() { return m_s; }
 
-    WorldSocket(NetworkManager& socketMrg, NetworkThread& owner);
+    WorldSocket(NetworkManager& manager, NetworkThread& owner);
 
     virtual ~WorldSocket(void);
 
 protected:
-
-    /// Called on open ,the void* is the acceptor.
-    virtual bool open() override;
-
-    virtual bool process_incoming_data() override;
+    virtual bool Open() override;
+    virtual bool ProcessIncomingData() override;
 
 private:
     /// Helper functions for processing incoming data.
     int handle_input_header(void);
     int handle_input_payload(void);
-        
+
     /// process one incoming packet.
     /// @param new_pct received packet ,note that you need to delete it.
     int ProcessIncoming(WorldPacket* new_pct);
@@ -109,8 +104,6 @@ private:
 
     /// Called by ProcessIncoming() on CMSG_PING.
     int HandlePing(WorldPacket& recvPacket);
-
-    bool AppendPacket(const WorldPacket &pct);
 
     /// Time in which the last ping was received
     std::chrono::system_clock::time_point m_LastPingTime;
@@ -135,6 +128,7 @@ private:
     /// It wont free memory when its deleted. m_RecvWPct takes care of freeing.
     NetworkBuffer m_RecvPct;
 
+    /// Fragment of the received header.
     NetworkBuffer m_Header;
 
     uint32 m_Seed;
