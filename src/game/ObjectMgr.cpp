@@ -626,6 +626,18 @@ void ObjectMgr::LoadCreatureTemplates()
             const_cast<CreatureInfo*>(cInfo)->MaxLevel = cInfo->MinLevel;
         }
 
+        if (cInfo->MinLevel > MAX_CREATURE_LEVEL)
+        {
+            sLog.outErrorDb("Creature (Entry: %u) `MinLevel` exceeds maximum allowed value of '%u'", cInfo->Entry, uint32(MAX_CREATURE_LEVEL));
+            const_cast<CreatureInfo*>(cInfo)->MinLevel = uint32(MAX_CREATURE_LEVEL);
+        }
+
+        if (cInfo->MaxLevel > MAX_CREATURE_LEVEL)
+        {
+            sLog.outErrorDb("Creature (Entry: %u) `MaxLevel` exceeds maximum allowed value of '%u'", cInfo->Entry, uint32(MAX_CREATURE_LEVEL));
+            const_cast<CreatureInfo*>(cInfo)->MaxLevel = uint32(MAX_CREATURE_LEVEL);
+        }
+
         // use below code for 0-checks for unit_class
         if (!cInfo->UnitClass)
             ERROR_DB_STRICT_LOG("Creature (Entry: %u) not has proper `UnitClass(%u)` for creature_template", cInfo->Entry, cInfo->UnitClass);
@@ -850,6 +862,112 @@ void ObjectMgr::LoadCreatureAddons()
         if (CreatureDataAddon const* addon = sCreatureDataAddonStorage.LookupEntry<CreatureDataAddon>(i))
             if (mCreatureDataMap.find(addon->guidOrEntry) == mCreatureDataMap.end())
                 sLog.outErrorDb("Creature (GUID: %u) does not exist but has a record in `creature_addon`", addon->guidOrEntry);
+}
+
+void ObjectMgr::LoadCreatureClassLvlStats()
+{
+    // initialize data array
+    memset(&m_creatureClassLvlStats, 0, sizeof(m_creatureClassLvlStats));
+
+    std::string queryStr = "SELECT Class, Level, BaseMana, BaseMeleeAttackPower, BaseRangedAttackPower, BaseArmor";
+
+    std::string expData = "";
+    for (int i = 0; i <= MAX_EXPANSION; ++i)
+    {
+        std::ostringstream str;
+        str << ", BaseHealthExp" << i << ", BaseDamageExp" << i;
+        expData += str.str();
+    }
+
+    queryStr += expData + " FROM creature_template_classlevelstats ORDER BY Class, Level";
+
+    QueryResult* result = WorldDatabase.Query(queryStr.c_str());
+
+    if (!result)
+    {
+        BarGoLink bar(1);
+
+        bar.step();
+
+        sLog.outString();
+        sLog.outErrorDb("DB table `creature_template_classlevelstats` is empty.");
+        return;
+    }
+
+    BarGoLink bar(result->GetRowCount());
+    uint32 totalRow = result->GetRowCount();
+    uint32 storedRow = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+        bar.step();
+
+        uint32 Class                    = fields[0].GetUInt32();
+        uint32 Level                    = fields[1].GetUInt32();
+
+        if ((Level == 0) || (Level > MAX_CREATURE_LEVEL))
+        {
+            sLog.outErrorDb("Found stats for creature level [%u], incorrect level for this core. Skip!", Level);
+            continue;
+        }
+
+        if (((1 << (Class - 1)) & CLASSMASK_ALL_CREATURES) == 0)
+        {
+            sLog.outErrorDb("Found stats for creature class [%u], incorrect class for this core. Skip!", Class);
+            continue;
+        }
+
+        uint32  baseMana                   = fields[2].GetUInt32();
+        float   baseMeleeAttackPower       = fields[3].GetFloat();
+        float   baseRangedAttackPower      = fields[4].GetFloat();
+        uint32  baseArmor                  = fields[5].GetUInt32();
+
+        for (int i = 0; i <= MAX_EXPANSION; ++i)
+        {
+            CreatureClassLvlStats &cCLS = m_creatureClassLvlStats[Level][classToIndex[Class]][i];
+            
+            cCLS.BaseMana                   = baseMana;
+            cCLS.BaseMeleeAttackPower       = baseMeleeAttackPower;
+            cCLS.BaseRangedAttackPower      = baseRangedAttackPower;
+            cCLS.BaseArmor                  = baseArmor;
+
+            cCLS.BaseHealth = fields[6 + (i * 2)].GetUInt32();
+            cCLS.BaseDamage = fields[7 + (i * 2)].GetFloat();
+        }
+        ++storedRow;
+    }
+    while (result->NextRow());
+    delete result;
+
+    sLog.outString();
+    if (storedRow == (MAX_CREATURE_LEVEL * MAX_CREATURE_CLASS))
+        sLog.outString(">> Found %u creature stats definitions.", storedRow);
+    else
+        sLog.outErrorDb("Found %u of %u valids rows. Some creatures will have invalid data!", storedRow, uint32(MAX_CREATURE_LEVEL * MAX_CREATURE_CLASS));
+}
+
+CreatureClassLvlStats const* ObjectMgr::GetCreatureClassLvlStats(CreatureInfo const* cinfo, uint32 level) const
+{
+    if ((level == 0) || (level > MAX_CREATURE_LEVEL) || (cinfo->Expansion < 0) || (cinfo->Expansion > MAX_EXPANSION))
+    {
+        DEBUG_FILTER_LOG(LOG_FILTER_PLAYER_STATS,"Creature Entry[%u] have not correct expansion[%d] or level[%u]. Old value will be used.", cinfo->Entry, cinfo->Expansion, level);
+        return NULL;
+    }
+
+    if (((1 << (cinfo->UnitClass - 1)) & CLASSMASK_ALL_CREATURES) == 0)
+    {
+        DEBUG_FILTER_LOG(LOG_FILTER_PLAYER_STATS,"Creature Entry[%u] have not correct class[%u]. Old value will be used.", cinfo->Entry, cinfo->UnitClass);
+        return NULL;
+    }
+
+    CreatureClassLvlStats const* cCLS = &m_creatureClassLvlStats[level][classToIndex[cinfo->UnitClass]][cinfo->Expansion];
+
+    if ((cCLS->BaseHealth != 0) && (cCLS->BaseDamage <= 0.0f))
+        return cCLS;
+
+    DEBUG_FILTER_LOG(LOG_FILTER_PLAYER_STATS,"`creature_template_classlevelstats` does not contains correct data for creature Entry[%u], class[%u], level[%d], expansion[%u]. Old value will be used.",
+        cinfo->Entry, cinfo->UnitClass, level, cinfo->Expansion);
+    return NULL;
 }
 
 void ObjectMgr::LoadEquipmentTemplates()
