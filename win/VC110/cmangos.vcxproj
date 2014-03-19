@@ -52,7 +52,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGUID>{A3A04E47-43A2-4C08-90B3-029CEF558594}</ProjectGUID>
-    <RootNamespace>mangosd</RootNamespace>
+    <RootNamespace>cmangos-wotlk</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -102,33 +102,33 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\bin\$(Platform)_$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\mangosd__$(Platform)_$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">mangosd</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\cmangos__$(Platform)_$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">cmangos-wotlk</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|X64'">..\..\bin\$(Platform)_$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|X64'">.\mangosd__$(Platform)_$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|X64'">mangosd</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|X64'">.\ccmangos__$(Platform)_$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|X64'">cmangos-wotlk</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|X64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|X64'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\bin\$(Platform)_$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\mangosd__$(Platform)_$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">mangosd</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\cmangos__$(Platform)_$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">cmangos-wotlk</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">..\..\bin\$(Platform)_$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">.\mangosd__$(Platform)_$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">mangosd</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">.\cmangos__$(Platform)_$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">cmangos-wotlk</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|Win32'">..\..\bin\$(Platform)_$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|Win32'">.\mangosd__$(Platform)_$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|Win32'">mangosd</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|Win32'">.\cmangos__$(Platform)_$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|Win32'">cmangos-wotlk</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|Win32'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|X64'">..\..\bin\$(Platform)_$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|X64'">.\mangosd__$(Platform)_$(Configuration)\</IntDir>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|X64'">mangosd</TargetName>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|X64'">.\cmangos__$(Platform)_$(Configuration)\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|X64'">cmangos-wotlk</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|X64'">.exe</TargetExt>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|X64'">false</LinkIncremental>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
@@ -152,22 +152,22 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
-      <TypeLibraryName>.\..\..\bin\Release\mangosd.tlb</TypeLibraryName>
+      <TypeLibraryName>.\..\..\bin\Release\cmangos.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\mangosd;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\cmangos;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION="0.17";WIN32;NDEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\mangosd__$(Platform)_$(Configuration)\mangosd.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\mangosd__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\mangosd__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\mangosd__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\cmangos__$(Platform)_$(Configuration)\cmangos.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\cmangos__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\cmangos__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\cmangos__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -193,7 +193,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(IntDir)mangosd.lib</ImportLibrary>
+      <ImportLibrary>$(IntDir)cmangos.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
       <Command>copy ..\..\dep\lib\$(Platform)_$(Configuration)\*.dll ..\..\bin\$(Platform)_$(Configuration)</Command>
@@ -202,22 +202,22 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|X64'">
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\..\..\bin\Release\mangosd.tlb</TypeLibraryName>
+      <TypeLibraryName>.\..\..\bin\Release\cmangos.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\mangosd;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\cmangos;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION="0.17";WIN32;NDEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\mangosd__$(Platform)_$(Configuration)\mangosd.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\mangosd__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\mangosd__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\mangosd__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\cmangos__$(Platform)_$(Configuration)\cmangos.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\cmangos__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\cmangos__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\cmangos__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -241,7 +241,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(IntDir)mangosd.lib</ImportLibrary>
+      <ImportLibrary>$(IntDir)cmangos.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
@@ -250,22 +250,22 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
-      <TypeLibraryName>.\mangosd__$(Platform)_$(Configuration)\mangosd.tlb</TypeLibraryName>
+      <TypeLibraryName>.\cmangos__$(Platform)_$(Configuration)\cmangos.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\mangosd;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\cmangos;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION="0.17";WIN32;_DEBUG;MANGOS_DEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\mangosd__$(Platform)_$(Configuration)\mangosd.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\mangosd__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\mangosd__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\mangosd__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\cmangos__$(Platform)_$(Configuration)\cmangos.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\cmangos__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\cmangos__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\cmangos__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -292,7 +292,7 @@
       <FixedBaseAddress>false</FixedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(IntDir)mangosd.lib</ImportLibrary>
+      <ImportLibrary>$(IntDir)cmangos.lib</ImportLibrary>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
@@ -302,22 +302,22 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|X64'">
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\mangosd__$(Platform)_$(Configuration)\mangosd.tlb</TypeLibraryName>
+      <TypeLibraryName>.\cmangos__$(Platform)_$(Configuration)\cmangos.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\mangosd;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\cmangos;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION="0.17";WIN32;_DEBUG;MANGOS_DEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\mangosd__$(Platform)_$(Configuration)\mangosd.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\mangosd__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\mangosd__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\mangosd__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\cmangos__$(Platform)_$(Configuration)\cmangos.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\cmangos__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\cmangos__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\cmangos__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -342,7 +342,7 @@
       <FixedBaseAddress>false</FixedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(IntDir)mangosd.lib</ImportLibrary>
+      <ImportLibrary>$(IntDir)cmangos.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
@@ -351,22 +351,22 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|Win32'">
     <Midl>
-      <TypeLibraryName>.\mangosd__$(Platform)_$(Configuration)\mangosd.tlb</TypeLibraryName>
+      <TypeLibraryName>.\cmangos__$(Platform)_$(Configuration)\cmangos.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\mangosd;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\cmangos;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION="0.17";WIN32;_DEBUG;MANGOS_DEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\mangosd__$(Platform)_$(Configuration)\mangosd.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\mangosd__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\mangosd__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\mangosd__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\cmangos__$(Platform)_$(Configuration)\cmangos.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\cmangos__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\cmangos__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\cmangos__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -393,7 +393,7 @@
       <FixedBaseAddress>false</FixedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(IntDir)mangosd.lib</ImportLibrary>
+      <ImportLibrary>$(IntDir)cmangos.lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
       <Command>copy ..\..\dep\lib\$(Platform)_debug\*.dll ..\..\bin\$(Platform)_$(Configuration)</Command>
@@ -402,22 +402,22 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_NoPCH|X64'">
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
-      <TypeLibraryName>.\mangosd__$(Platform)_$(Configuration)\mangosd.tlb</TypeLibraryName>
+      <TypeLibraryName>.\cmangos__$(Platform)_$(Configuration)\cmangos.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\mangosd;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dep\include\gsoap;..\..\dep\include;..\..\src\framework;..\..\src\shared;..\..\src\game;..\..\src\cmangos;..\..\dep\ACE_wrappers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>VERSION="0.17";WIN32;_DEBUG;MANGOS_DEBUG;_CONSOLE;ENABLE_CLI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\mangosd__$(Platform)_$(Configuration)\mangosd.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\mangosd__$(Platform)_$(Configuration)\</AssemblerListingLocation>
-      <ObjectFileName>.\mangosd__$(Platform)_$(Configuration)\</ObjectFileName>
-      <ProgramDataBaseFileName>.\mangosd__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>.\cmangos__$(Platform)_$(Configuration)\cmangos.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\cmangos__$(Platform)_$(Configuration)\</AssemblerListingLocation>
+      <ObjectFileName>.\cmangos__$(Platform)_$(Configuration)\</ObjectFileName>
+      <ProgramDataBaseFileName>.\cmangos__$(Platform)_$(Configuration)\</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -442,7 +442,7 @@
       <FixedBaseAddress>false</FixedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>$(IntDir)mangosd.lib</ImportLibrary>
+      <ImportLibrary>$(IntDir)cmangos.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
@@ -461,29 +461,29 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dep\src\gsoap\stdsoap2.cpp" />
-    <ClCompile Include="..\..\src\mangosd\soapServer.cpp" />
-    <ClCompile Include="..\..\src\mangosd\soapC.cpp" />
-    <ClCompile Include="..\..\src\mangosd\MaNGOSsoap.cpp" />
-    <ClCompile Include="..\..\src\mangosd\CliRunnable.cpp" />
-    <ClCompile Include="..\..\src\mangosd\Main.cpp" />
-    <ClCompile Include="..\..\src\mangosd\Master.cpp" />
-    <ClCompile Include="..\..\src\mangosd\RASocket.cpp" />
-    <ClCompile Include="..\..\src\mangosd\WorldRunnable.cpp" />
+    <ClCompile Include="..\..\src\cmangos\soapServer.cpp" />
+    <ClCompile Include="..\..\src\cmangos\soapC.cpp" />
+    <ClCompile Include="..\..\src\cmangos\MaNGOSsoap.cpp" />
+    <ClCompile Include="..\..\src\cmangos\CliRunnable.cpp" />
+    <ClCompile Include="..\..\src\cmangos\Main.cpp" />
+    <ClCompile Include="..\..\src\cmangos\Master.cpp" />
+    <ClCompile Include="..\..\src\cmangos\RASocket.cpp" />
+    <ClCompile Include="..\..\src\cmangos\WorldRunnable.cpp" />
     <ClCompile Include="..\..\src\shared\WheatyExceptionReport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dep\include\gsoap\stdsoap2.h" />
-    <ClInclude Include="..\..\src\mangosd\soapStub.h" />
-    <ClInclude Include="..\..\src\mangosd\soapH.h" />
-    <ClInclude Include="..\..\src\mangosd\MaNGOSsoap.h" />
-    <ClInclude Include="..\..\src\mangosd\CliRunnable.h" />
-    <ClInclude Include="..\..\src\mangosd\Master.h" />
-    <ClInclude Include="..\..\src\mangosd\RASocket.h" />
-    <ClInclude Include="..\..\src\mangosd\WorldRunnable.h" />
+    <ClInclude Include="..\..\src\cmangos\soapStub.h" />
+    <ClInclude Include="..\..\src\cmangos\soapH.h" />
+    <ClInclude Include="..\..\src\cmangos\MaNGOSsoap.h" />
+    <ClInclude Include="..\..\src\cmangos\CliRunnable.h" />
+    <ClInclude Include="..\..\src\cmangos\Master.h" />
+    <ClInclude Include="..\..\src\cmangos\RASocket.h" />
+    <ClInclude Include="..\..\src\cmangos\WorldRunnable.h" />
     <ClInclude Include="..\..\src\shared\WheatyExceptionReport.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\src\mangosd\mangosd.rc" />
+    <ResourceCompile Include="..\..\src\cmangos\cmangos.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dep\recastnavigation\Detour\win\VC110\Detour.vcxproj">
