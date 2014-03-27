@@ -645,18 +645,23 @@ void ObjectMgr::LoadCreatureTemplates()
         }
 
         // use below code for 0-checks for unit_class
-        if (!cInfo->UnitClass)
+        if (!cInfo->UnitClass || (((1 << (cInfo->UnitClass - 1)) & CLASSMASK_ALL_CREATURES) == 0))
         {
-            sLog.outErrorDb("Creature (Entry: %u) not has proper `UnitClass(%u)` for creature_template", cInfo->Entry, cInfo->UnitClass);
+            sLog.outErrorDb("Creature (Entry: %u) does not have proper `UnitClass(%u)` in creature_template", cInfo->Entry, cInfo->UnitClass);
             const_cast<CreatureInfo*>(cInfo)->Expansion = -1;
         }
-        else 
+
+        if (!cInfo->Expansion < 0)
         {
-            if (((1 << (cInfo->UnitClass - 1)) & CLASSMASK_ALL_CREATURES) == 0)
-            {
-                sLog.outErrorDb("Creature (Entry: %u) has invalid `UnitClass(%u)` for creature_template", cInfo->Entry, cInfo->UnitClass);
-                const_cast<CreatureInfo*>(cInfo)->Expansion = -1;
-            }
+             for (uint32 level = cInfo->MinLevel; level <= cInfo->MaxLevel; ++level)
+             {
+                 if (!GetCreatureClassLvlStats(level, cInfo->UnitClass, cInfo->Expansion))
+                 {
+                     sLog.outErrorDb("Creature (Entry: %u), level(%u) has no data in `creature_template_classlevelstats`", cInfo->Entry, level);
+                     const_cast<CreatureInfo*>(cInfo)->Expansion = -1;
+                     break;
+                 }
+             }
         }
 
         if (cInfo->DamageSchool >= MAX_SPELL_SCHOOL)
@@ -956,10 +961,7 @@ void ObjectMgr::LoadCreatureClassLvlStats()
     delete result;
 
     sLog.outString();
-    if (storedRow == (DEFAULT_MAX_CREATURE_LEVEL * MAX_CREATURE_CLASS))
-        sLog.outString(">> Found %u creature stats definitions.", storedRow);
-    else
-        sLog.outErrorDb("Found %u of %u valids rows. Some creatures will have invalid data!", storedRow, uint32(DEFAULT_MAX_CREATURE_LEVEL * MAX_CREATURE_CLASS));
+    sLog.outString(">> Found %u creature stats definitions.", storedRow);
 }
 
 CreatureClassLvlStats const* ObjectMgr::GetCreatureClassLvlStats(uint32 level, uint32 unitClass, int32 expansion) const
