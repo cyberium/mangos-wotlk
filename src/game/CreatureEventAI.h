@@ -165,6 +165,17 @@ enum SpawnedEventMode
     SPAWNED_EVENT_ZONE  = 2
 };
 
+enum CastFlags
+{
+    CAST_INTERRUPT_PREVIOUS     = 0x01,                     //Interrupt any spell casting
+    CAST_TRIGGERED              = 0x02,                     //Triggered (this makes spell cost zero mana and have no cast time)
+    CAST_FORCE_CAST             = 0x04,                     //Forces cast even if creature is out of mana or out of range
+    CAST_NO_MELEE_IF_OOM        = 0x08,                     //Prevents creature from entering melee if out of mana or out of range
+    CAST_FORCE_TARGET_SELF      = 0x10,                     //Forces the target to cast this spell on itself
+    CAST_AURA_NOT_PRESENT       = 0x20,                     //Only casts the spell if the target does not have an aura from the spell
+    CAST_COMBAT_MOVE            = 0x40                      //Prevents combat movement if cast successful. Allows movement on range, OOM, LOS
+};
+
 struct CreatureEventAI_Action
 {
     EventAI_ActionType type: 16;
@@ -648,7 +659,7 @@ class MANGOS_DLL_SPEC CreatureEventAI : public CreatureAI
         Unit* DoSelectLowestHpFriendly(float range, uint32 MinHPDiff);
         void DoFindFriendlyMissingBuff(std::list<Creature*>& _list, float range, uint32 spellid);
         void DoFindFriendlyCC(std::list<Creature*>& _list, float range);
-
+        void CombatMovement(Bool on);
     protected:
         uint32 m_EventUpdateTime;                           // Time between event updates
         uint32 m_EventDiff;                                 // Time between the last event call
