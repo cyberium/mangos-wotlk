@@ -668,18 +668,18 @@ void Creature::RegeneratePower()
                     float ManaIncreaseRate = sWorld.getConfig(CONFIG_FLOAT_RATE_POWER_MANA);
                     float Spirit = GetStat(STAT_SPIRIT);
 
-                    addValue = (Spirit / 5.0f + 17.0f) * ManaIncreaseRate;
+                    addValue = (Spirit / 200.0f + 0.425f) * ManaIncreaseRate;
                 }
             }
             else
-                addValue = maxValue / 3;
+                addValue = maxValue / 120;
             break;
         case POWER_ENERGY:
             // ToDo: for vehicle this is different - NEEDS TO BE FIXED!
-            addValue = 20 * sWorld.getConfig(CONFIG_FLOAT_RATE_POWER_ENERGY);
+            addValue = 0.5f * sWorld.getConfig(CONFIG_FLOAT_RATE_POWER_ENERGY);
             break;
         case POWER_FOCUS:
-            addValue = 24 * sWorld.getConfig(CONFIG_FLOAT_RATE_POWER_FOCUS);
+            addValue = 0.6f * sWorld.getConfig(CONFIG_FLOAT_RATE_POWER_FOCUS);
             break;
         default:
             return;
@@ -719,12 +719,12 @@ void Creature::RegenerateHealth()
         float Spirit = GetStat(STAT_SPIRIT);
 
         if (GetPower(POWER_MANA) > 0)
-            addvalue = uint32(Spirit * 0.25 * HealthIncreaseRate);
+            addvalue = uint32(Spirit * 0.0625 * HealthIncreaseRate);
         else
-            addvalue = uint32(Spirit * 0.80 * HealthIncreaseRate);
+            addvalue = uint32(Spirit * 0.02 * HealthIncreaseRate);
     }
     else
-        addvalue = maxValue / 3;
+        addvalue = maxValue / 120;
 
     ModifyHealth(addvalue);
 }
