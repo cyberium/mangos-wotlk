@@ -74,9 +74,9 @@ endif()
 
 # find boost lib
 set(BOOST_ROOT $ENV{BOOST_ROOT})
-set(Boost_USE_STATIC_LIBS   ON)
+set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)
-find_package(Boost REQUIRED COMPONENTS )
+find_package(Boost COMPONENTS regex system filesystem thread program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 

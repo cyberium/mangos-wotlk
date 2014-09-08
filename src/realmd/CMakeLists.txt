@@ -27,6 +27,8 @@ set(EXECUTABLE_SRCS
     PatchHandler.h
     RealmList.cpp
     RealmList.h
+    SessionManager.cpp
+    SessionManager.h
    )
 
 if(WIN32)
