@@ -21,11 +21,11 @@
 
 #include "utf8cpp/utf8.h"
 #include "mersennetwister/MersenneTwister.h"
-#include <ace/TSS_T.h>
 #include <ace/INET_Addr.h>
 
-typedef ACE_TSS<MTRand> MTRandTSS;
-static MTRandTSS mtRand;
+#include <boost/thread/tss.hpp>
+
+static boost::thread_specific_ptr<MTRand> mtRand;
 
 static ACE_Time_Value g_SystemTickTime = ACE_OS::gettimeofday();
 
