@@ -172,7 +172,7 @@ void Database::InitDelayThread()
 
     // New delay thread for delay execute
     m_threadBody = CreateDelayThread();              // will deleted at m_delayThread delete
-    m_delayThread = new ACE_Based::Thread(m_threadBody);
+    m_delayThread = new MaNGOS::Thread(m_threadBody);
 }
 
 void Database::HaltDelayThread()
@@ -327,6 +327,9 @@ bool Database::Execute(const char* sql)
     if (!m_pAsyncConn)
         return false;
 
+    if (!m_TransStorage.get())
+        m_TransStorage.reset(new TransHelper());
+
     SqlTransaction* pTrans = m_TransStorage->get();
     if (pTrans)
     {
@@ -391,6 +394,9 @@ bool Database::BeginTransaction()
     if (!m_pAsyncConn)
         return false;
 
+    if (!m_TransStorage.get())
+        m_TransStorage.reset(new TransHelper());
+
     // initiate transaction on current thread
     // currently we do not support queued transactions
     m_TransStorage->init();
@@ -399,7 +405,7 @@ bool Database::BeginTransaction()
 
 bool Database::CommitTransaction()
 {
-    if (!m_pAsyncConn)
+    if (!m_pAsyncConn || !m_TransStorage.get())
         return false;
 
     // check if we have pending transaction
@@ -417,7 +423,7 @@ bool Database::CommitTransaction()
 
 bool Database::CommitTransactionDirect()
 {
-    if (!m_pAsyncConn)
+    if (!m_pAsyncConn || !m_TransStorage.get())
         return false;
 
     // check if we have pending transaction
@@ -434,7 +440,7 @@ bool Database::CommitTransactionDirect()
 
 bool Database::RollbackTransaction()
 {
-    if (!m_pAsyncConn)
+    if (!m_pAsyncConn || !m_TransStorage.get())
         return false;
 
     if (!m_TransStorage->get())
@@ -538,6 +544,9 @@ bool Database::ExecuteStmt(const SqlStatementID& id, SqlStmtParameters* params)
 {
     if (!m_pAsyncConn)
         return false;
+
+    if (!m_TransStorage.get())
+        m_TransStorage.reset(new TransHelper());
 
     SqlTransaction* pTrans = m_TransStorage->get();
     if (pTrans)
