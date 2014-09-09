@@ -22,11 +22,16 @@
 */
 
 #include "WorldSocketMgr.h"
-#include <boost/system/error_code.hpp>
 #include "Log.h"
 #include "Common.h"
 #include "Config/Config.h"
 #include "WorldSocket.h"
+
+#include <boost/system/error_code.hpp>
+
+#define CLASS_LOCK MaNGOS::ClassLevelLockable<WorldSocketMgr, boost::recursive_mutex>
+INSTANTIATE_SINGLETON_2(WorldSocketMgr, CLASS_LOCK);
+INSTANTIATE_CLASS_MUTEX(WorldSocketMgr, boost::recursive_mutex);
 
 WorldSocketMgr::WorldSocketMgr():
     m_SockOutKBuff(-1),
@@ -84,11 +89,6 @@ bool WorldSocketMgr::OnSocketOpen(const SocketPtr& sock)
     sock->SetOutgoingBufferSize(static_cast<size_t>(m_SockOutUBuff));
 
     return NetworkManager::OnSocketOpen(sock);
-}
-
-WorldSocketMgr* WorldSocketMgr::Instance()
-{
-    return ACE_Singleton<WorldSocketMgr, ACE_Thread_Mutex>::instance();
 }
 
 SocketPtr WorldSocketMgr::CreateSocket(NetworkThread& owner)
