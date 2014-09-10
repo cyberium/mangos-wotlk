@@ -105,13 +105,15 @@ set(LIBRARY_SRCS
     SystemConfig.h
     Threading.cpp
     Threading.h
-	Network/ProtocolDefinitions.h
-	Network/Socket.cpp
-	Network/Socket.h
-	Network/NetworkThread.cpp
-	Network/NetworkThread.h
-	Network/NetworkManager.cpp
-	Network/NetworkManager.h
+    Network/NetworkBuffer.cpp
+    Network/NetworkBuffer.h
+    Network/NetworkThread.cpp
+    Network/NetworkThread.h
+    Network/NetworkManager.cpp
+    Network/NetworkManager.h
+    Network/ProtocolDefinitions.h
+    Network/Socket.cpp
+    Network/Socket.h
 )
 
 

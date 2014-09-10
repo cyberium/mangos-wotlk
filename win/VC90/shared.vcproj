@@ -621,6 +621,46 @@
 			</File>
 		</Filter>
 		<Filter
+			Name="Network"
+			>
+			<File
+				RelativePath="..\..\src\shared\Network\NetworkBuffer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\Network\NetworkBuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\Network\NetworkManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\Network\NetworkManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\Network\NetworkThread.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\Network\NetworkThread.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\Network\ProtocolDefinitions.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\Network\Socket.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shared\Network\Socket.h"
+				>
+			</File>
+		</Filter>
+		<Filter
 			Name="Util"
 			>
 			<File
