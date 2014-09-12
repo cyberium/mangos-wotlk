@@ -35,7 +35,6 @@
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 
-#include <ace/ACE.h>
 #include <boost/date_time/posix_time/posix_time_duration.hpp>
 #include <boost/program_options.hpp>
 #include <boost/thread.hpp>

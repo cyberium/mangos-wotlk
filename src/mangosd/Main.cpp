@@ -32,7 +32,6 @@
 #include "revision_nr.h"
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
-#include <ace/Version.h>
 
 #include <boost/program_options.hpp>
 #include "boost/version.hpp"
