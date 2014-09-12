@@ -22,8 +22,6 @@ set(EXECUTABLE_SRCS
     AuthCodes.h
     AuthSocket.cpp
     AuthSocket.h
-    BufferedSocket.cpp
-    BufferedSocket.h
     Main.cpp
     PatchHandler.cpp
     PatchHandler.h
@@ -58,6 +56,7 @@ endif()
 target_link_libraries(${EXECUTABLE_NAME}
   shared
   framework
+  ${Boost_LIBRARIES}
   ${ACE_LIBRARIES}
 )
 
