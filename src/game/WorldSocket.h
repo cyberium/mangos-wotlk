@@ -25,16 +25,11 @@
 #ifndef _WORLDSOCKET_H
 #define _WORLDSOCKET_H
 
-#include <ace/Time_Value.h>
-
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "Network/Socket.h"
-
-#if !defined (ACE_LACKS_PRAGMA_ONCE)
-#pragma once
-#endif /* ACE_LACKS_PRAGMA_ONCE */
 
 #include "Common.h"
 #include "Auth/AuthCrypt.h"
@@ -124,7 +119,7 @@ private:
     bool AppendPacket(const WorldPacket &pct);
 
     /// Time in which the last ping was received
-    ACE_Time_Value m_LastPingTime;
+    boost::posix_time::ptime m_LastPingTime;
 
     /// Keep track of over-speed pings ,to prevent ping flood.
     uint32 m_OverSpeedPings;

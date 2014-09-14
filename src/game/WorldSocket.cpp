@@ -42,6 +42,8 @@
 #pragma pack(push,1)
 #endif
 
+using namespace boost::posix_time;
+
 struct ServerPktHeader
 {
     /**
@@ -101,7 +103,7 @@ struct ClientPktHeader
 #endif
 
 WorldSocket::WorldSocket(NetworkManager& socketMrg,NetworkThread& owner) : Socket(socketMrg, owner),
-    m_LastPingTime(ACE_Time_Value::zero),
+    m_LastPingTime(not_a_date_time),
     m_OverSpeedPings(0),
     m_Session(0),
     m_RecvWPct(0),
@@ -570,16 +572,15 @@ int WorldSocket::HandlePing(WorldPacket& recvPacket)
     recvPacket >> ping;
     recvPacket >> latency;
 
-    if (m_LastPingTime == ACE_Time_Value::zero)
-        m_LastPingTime = ACE_OS::gettimeofday();            // for 1st ping
+    if (m_LastPingTime == not_a_date_time)
+        m_LastPingTime = second_clock::local_time();            // for 1st ping
     else
     {
-        ACE_Time_Value cur_time = ACE_OS::gettimeofday();
-        ACE_Time_Value diff_time(cur_time);
-        diff_time -= m_LastPingTime;
+        ptime cur_time(second_clock::local_time());
+        time_duration diff_time = cur_time - m_LastPingTime;
         m_LastPingTime = cur_time;
 
-        if (diff_time < ACE_Time_Value(27))
+        if (diff_time < seconds(27))
         {
             ++m_OverSpeedPings;
 
