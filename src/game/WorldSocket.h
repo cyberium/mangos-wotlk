@@ -27,7 +27,7 @@
 
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/lock_guard.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <chrono>
 
 #include "Network/Socket.h"
 
@@ -119,7 +119,7 @@ private:
     bool AppendPacket(const WorldPacket &pct);
 
     /// Time in which the last ping was received
-    boost::posix_time::ptime m_LastPingTime;
+    std::chrono::system_clock::time_point m_LastPingTime;
 
     /// Keep track of over-speed pings ,to prevent ping flood.
     uint32 m_OverSpeedPings;

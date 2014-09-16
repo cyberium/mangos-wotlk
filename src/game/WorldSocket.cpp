@@ -32,9 +32,9 @@
 #include "Log.h"
 #include "DBCStores.h"
 
+#include <chrono>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
-#include <boost/date_time/posix_time/posix_time_duration.hpp>
 
 #if defined( __GNUC__ )
 #pragma pack(1)
@@ -42,7 +42,7 @@
 #pragma pack(push,1)
 #endif
 
-using namespace boost::posix_time;
+using namespace std::chrono;
 
 struct ServerPktHeader
 {
@@ -103,7 +103,6 @@ struct ClientPktHeader
 #endif
 
 WorldSocket::WorldSocket(NetworkManager& socketMrg,NetworkThread& owner) : Socket(socketMrg, owner),
-    m_LastPingTime(not_a_date_time),
     m_OverSpeedPings(0),
     m_Session(0),
     m_RecvWPct(0),
@@ -572,12 +571,12 @@ int WorldSocket::HandlePing(WorldPacket& recvPacket)
     recvPacket >> ping;
     recvPacket >> latency;
 
-    if (m_LastPingTime == not_a_date_time)
-        m_LastPingTime = second_clock::local_time();            // for 1st ping
+    if (m_LastPingTime.time_since_epoch().count() == 0)
+        m_LastPingTime = system_clock::now();            // for 1st ping
     else
     {
-        ptime cur_time(second_clock::local_time());
-        time_duration diff_time = cur_time - m_LastPingTime;
+        system_clock::time_point cur_time = system_clock::now();
+        system_clock::duration diff_time = cur_time - m_LastPingTime;
         m_LastPingTime = cur_time;
 
         if (diff_time < seconds(27))
