@@ -1122,7 +1122,7 @@ bool AuthSocket::send(const char* buf, size_t len)
         return true;
     }
     else
-        throw std::exception("network write buffer is too small to accommodate packet");
+        MANGOS_ASSERT(false && "network write buffer is too small to accommodate packet");
     
     return false;
 }
