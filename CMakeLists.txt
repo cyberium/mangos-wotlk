@@ -26,6 +26,21 @@ set(CMAKE_MODULE_PATH
   ${CMAKE_SOURCE_DIR}/cmake
 )
 
+# Check c++11 compiler support
+if(UNIX)
+  message("Checcking compiler requierement c++11 support...")
+  include(CheckCXXCompilerFlag)
+  CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+  CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+  if(COMPILER_SUPPORTS_CXX11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+  elseif(COMPILER_SUPPORTS_CXX0X)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+  else()
+    message(FATAL_ERROR "Error, CMaNGOS requires compiler that support C++11!")
+  endif()
+endif()
+
 # define all options here
 option(DEBUG                "Debug mode"                            OFF)
 option(TBB_USE_EXTERNAL     "Use external TBB"                      OFF)
@@ -73,10 +88,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 # find boost lib
-set(BOOST_ROOT $ENV{BOOST_ROOT})
-set(Boost_USE_STATIC_LIBS ON)
-set(Boost_USE_MULTITHREADED ON)
-find_package(Boost COMPONENTS regex system filesystem thread program_options REQUIRED)
+include(ConfigureBoost)
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
