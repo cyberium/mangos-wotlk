@@ -182,7 +182,7 @@ extern int main(int argc, char** argv)
 
     // Posix daemon commands need apply after config read
 #ifndef WIN32
-    switch (serviceDaemonMode)
+    switch (serviceDaemonMode[0])
     {
         case 'r':
             startDaemon();

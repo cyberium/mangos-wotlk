@@ -23,9 +23,11 @@
 #include <boost/thread/lock_guard.hpp>
 #include <chrono>
 #include "Common.h"
+#include "Log.h"
 #include "Auth/AuthCrypt.h"
 #include "Auth/BigNumber.h"
 #include "Network/Socket.h"
+#include "Utilities/ByteConverter.h"
 
 #if defined( __GNUC__ )
 #pragma pack(1)

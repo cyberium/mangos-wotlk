@@ -244,7 +244,7 @@ bool AuthSocket::SendPacket(const char* buf, size_t len)
         return true;
     }
     else
-        throw std::exception("network write buffer is too small to accommodate packet");
+        sLog.outError("network write buffer is too small to accommodate packet");
 
     return false;
 }
@@ -1040,7 +1040,7 @@ bool AuthSocket::HandleXferResume()
 
     try
     {
-        patch_.seekg(0, start_pos);
+        patch_.seekg(start_pos);
     }
     catch (boost::filesystem::fstream::failure&)
     {
