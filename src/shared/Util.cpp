@@ -22,18 +22,14 @@
 #include "utf8cpp/utf8.h"
 #include "mersennetwister/MersenneTwister.h"
 #include <ace/INET_Addr.h>
+#include <chrono>
 
 #include <boost/thread/tss.hpp>
 
 static boost::thread_specific_ptr<MTRand> mtRand;
 
-static ACE_Time_Value g_SystemTickTime = ACE_OS::gettimeofday();
-
 uint32 WorldTimer::m_iTime = 0;
 uint32 WorldTimer::m_iPrevTime = 0;
-
-uint32 WorldTimer::tickTime() { return m_iTime; }
-uint32 WorldTimer::tickPrevTime() { return m_iPrevTime; }
 
 uint32 WorldTimer::tick()
 {
@@ -41,7 +37,7 @@ uint32 WorldTimer::tick()
     m_iPrevTime = m_iTime;
 
     // get the new one and don't forget to persist current system time in m_SystemTickTime
-    m_iTime = WorldTimer::getMSTime_internal(true);
+    m_iTime = WorldTimer::getMSTime();
 
     // return tick diff
     return getMSTimeDiff(m_iPrevTime, m_iTime);
@@ -49,22 +45,8 @@ uint32 WorldTimer::tick()
 
 uint32 WorldTimer::getMSTime()
 {
-    return getMSTime_internal();
-}
-
-uint32 WorldTimer::getMSTime_internal(bool /*savetime*/ /*= false*/)
-{
-    // get current time
-    const ACE_Time_Value currTime = ACE_OS::gettimeofday();
-    // calculate time diff between two world ticks
-    // special case: curr_time < old_time - we suppose that our time has not ticked at all
-    // this should be constant value otherwise it is possible that our time can start ticking backwards until next world tick!!!
-    uint64 diff = 0;
-    (currTime - g_SystemTickTime).msec(diff);
-
-    // lets calculate current world time
-    uint32 iRes = uint32(diff % UI64LIT(0x00000000FFFFFFFF));
-    return iRes;
+    static const std::chrono::system_clock::time_point start_time = std::chrono::system_clock::now();
+    return uint32((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start_time).count()) % UI64LIT(0x00000000FFFFFFFF));
 }
 
 //////////////////////////////////////////////////////////////////////////
