@@ -18,13 +18,11 @@
 
 #include "Util.h"
 #include "Timer.h"
-
 #include "utf8cpp/utf8.h"
 #include "mersennetwister/MersenneTwister.h"
-#include <ace/INET_Addr.h>
 #include <chrono>
-
 #include <boost/thread/tss.hpp>
+#include <boost/asio/ip/address.hpp>
 
 static boost::thread_specific_ptr<MTRand> mtRand;
 
@@ -264,9 +262,9 @@ bool IsIPAddress(char const* ipaddress)
     if (!ipaddress)
         return false;
 
-    // Let the big boys do it.
-    // Drawback: all valid ip address formats are recognized e.g.: 12.23,121234,0xABCD)
-    return ACE_OS::inet_addr(ipaddress) != INADDR_NONE;
+    boost::system::error_code ec;
+    boost::asio::ip::address::from_string(ipaddress, ec);
+    return ec ? false : true;
 }
 
 /// create PID file
