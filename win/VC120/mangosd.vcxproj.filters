@@ -53,7 +53,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\mangosd\CliRunnable.h" />
-    <ClInclude Include="..\..\src\shared\WheatyExceptionReport.h" />
     <ClInclude Include="..\..\dep\include\gsoap\stdsoap2.h">
       <Filter>SOAP</Filter>
     </ClInclude>

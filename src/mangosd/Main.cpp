@@ -445,6 +445,7 @@ extern int main(int argc, char** argv)
 
     // Initialize the World
     sWorld.SetInitialWorldSettings();
+    boost::this_thread::sleep(boost::posix_time::seconds(20));
 
 #ifndef WIN32
     detachDaemon();
@@ -466,22 +467,22 @@ extern int main(int argc, char** argv)
         LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags & ~(%u), population = 0, realmbuilds = '%s'  WHERE id = '%u'", REALM_FLAG_OFFLINE, builds.c_str(), realmID);
     }
 
-    MaNGOS::Thread* cliThread = NULL;
-
-#ifdef WIN32
-    if (sConfig.GetBoolDefault("Console.Enable", true) && (serviceStatus == -1)/* need disable console in service mode*/)
-#else
-    if (sConfig.GetBoolDefault("Console.Enable", true))
-#endif
-    {
-        // Launch CliRunnable thread
-        cliThread = new MaNGOS::Thread(new CliRunnable);
-    }
-
-    MaNGOS::Thread* rar_thread = NULL;
+    std::auto_ptr<RemoteAdminSocketMgr> RemoteAdminMgr(new RemoteAdminSocketMgr());
     if (sConfig.GetBoolDefault("Ra.Enable", false))
     {
-        rar_thread = new MaNGOS::Thread(new RARunnable);
+        uint16 raport = sConfig.GetIntDefault("Ra.Port", 3443);
+        std::string stringip = sConfig.GetStringDefault("Ra.IP", "0.0.0.0");
+        if (!RemoteAdminMgr->StartNetwork(raport, stringip))
+        {
+            sLog.outError("MaNGOS Remote administration can not bind to %s:%d", stringip.c_str(), raport);
+            Log::WaitBeforeContinueIfNeed();
+            World::StopNow(ERROR_EXIT_CODE);
+            // go down and shutdown the server
+        }
+        else
+        {
+            sLog.outString("Starting Remote access listener on port %d on %s", raport, stringip.c_str());
+        }
     }
 
     // Handle affinity for multiple processors and process priority on Windows
@@ -511,7 +512,6 @@ extern int main(int argc, char** argv)
     // Launch the world listener socket
     uint16 wsport = sWorld.getConfig(CONFIG_UINT32_PORT_WORLD);
     std::string bind_ip = sConfig.GetStringDefault("BindIP", "0.0.0.0");
-
     if (!sWorldSocketMgr.StartNetwork(wsport, bind_ip))
     {
         sLog.outError("Failed to start network");
@@ -523,6 +523,18 @@ extern int main(int argc, char** argv)
     // Init new SQL thread for the world database
     WorldDatabase.ThreadStart();                            // let thread do safe mySQL requests (one connection call enough)
     sWorld.InitResultQueue();
+
+    MaNGOS::Thread* cliThread = NULL;
+
+#ifdef WIN32
+    if (sConfig.GetBoolDefault("Console.Enable", true) && (serviceStatus == -1)/* need disable console in service mode*/)
+#else
+    if (sConfig.GetBoolDefault("Console.Enable", true))
+#endif
+    {
+        // Launch CliRunnable thread
+        cliThread = new MaNGOS::Thread(new CliRunnable);
+    }
 
     // Run main world loop
     WorldUpdateLoop();
@@ -554,13 +566,6 @@ extern int main(int argc, char** argv)
 
     // Set server offline in realmlist
     LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags | %u WHERE id = '%u'", REALM_FLAG_OFFLINE, realmID);
-
-    if (rar_thread)
-    {
-        rar_thread->wait();
-        rar_thread->destroy();
-        delete rar_thread;
-    }
 
     // Clean account database before leaving
     ClearOnlineAccounts();
