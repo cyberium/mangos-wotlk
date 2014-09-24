@@ -27,7 +27,7 @@
 INSTANTIATE_SINGLETON_2(WorldSocketMgr, CLASS_LOCK);
 INSTANTIATE_CLASS_MUTEX(WorldSocketMgr, boost::recursive_mutex);
 
-WorldSocketMgr::WorldSocketMgr() :
+WorldSocketMgr::WorldSocketMgr() : NetworkManager("World"),
     m_SockOutKBuff(-1),
     m_SockOutUBuff(protocol::SEND_BUFFER_SIZE),
     m_UseNoDelay(true)

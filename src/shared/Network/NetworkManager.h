@@ -37,7 +37,7 @@ public:
     boost::uint16_t GetBindPort() { return port_; }
 
 protected:
-    NetworkManager();
+    NetworkManager(std::string const& mname);
     virtual ~NetworkManager();
 
     virtual SocketPtr CreateSocket(NetworkThread& owner) = 0;
@@ -57,6 +57,7 @@ private:
 
     std::string address_;
     boost::uint16_t port_;
+    std::string m_managerName;
 
     std::auto_ptr<protocol::Acceptor> acceptor_;
     boost::scoped_array<NetworkThread> network_threads_;

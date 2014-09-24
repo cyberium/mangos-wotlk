@@ -19,7 +19,7 @@
 #include "SessionManager.h"
 #include "AuthSocket.h"
 
-SessionManager::SessionManager()
+SessionManager::SessionManager() : NetworkManager("SessionMgr")
 {
 
 }

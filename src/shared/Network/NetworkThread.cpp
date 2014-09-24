@@ -19,7 +19,7 @@
 #include "NetworkThread.h"
 #include "Database/DatabaseEnv.h"
 
-NetworkThread::NetworkThread() : connections_(0)
+NetworkThread::NetworkThread() : connections_(0), m_threadName("Unknown")
 {
 
 }
@@ -63,9 +63,9 @@ void NetworkThread::RemoveSocket(const SocketPtr& socket)
 
 void NetworkThread::Work()
 {
-    DEBUG_LOG("Network Thread Starting");
+    DEBUG_LOG("Starting %s network thread.", m_threadName.c_str());
     LoginDatabase.ThreadStart();
     service_.run();
     LoginDatabase.ThreadEnd();
-    DEBUG_LOG("Network Thread Exitting");
+    DEBUG_LOG("%s network thread exitting.", m_threadName.c_str());
 }

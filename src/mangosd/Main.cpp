@@ -445,7 +445,6 @@ extern int main(int argc, char** argv)
 
     // Initialize the World
     sWorld.SetInitialWorldSettings();
-    boost::this_thread::sleep(boost::posix_time::seconds(20));
 
 #ifndef WIN32
     detachDaemon();
@@ -543,6 +542,8 @@ extern int main(int argc, char** argv)
     sWorld.CleanupsBeforeStop();
 
     sWorldSocketMgr.StopNetwork();
+
+    RemoteAdminMgr->StopNetwork();
 
     MapManager::Instance().UnloadAll();                     // unload all grids (including locked in memory)
 

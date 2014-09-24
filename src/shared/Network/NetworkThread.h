@@ -37,22 +37,24 @@ public:
     void AddSocket(const SocketPtr& socket);
     void RemoveSocket(const SocketPtr& socket);
 
-    long Connections() const { return connections_; }
-    protocol::Service& service() { return service_; }
+    inline long Connections() const { return connections_; }
+    inline protocol::Service& service() { return service_; }
+    inline void SetName(std::string const& threadName) { m_threadName = threadName; };
 
 private:
     virtual void Work();
 
-    typedef std::set<SocketPtr> SocketSet;
-    SocketSet sockets_;
+    typedef std::set<SocketPtr>             SocketSet;
+    SocketSet                               sockets_;
 
-    boost::atomic_long connections_;
+    boost::atomic_long                      connections_;
 
-    protocol::Service service_;
-    std::auto_ptr<protocol::Service::work> service_work_;
+    protocol::Service                       service_;
+    std::auto_ptr<protocol::Service::work>  service_work_;
 
-    std::auto_ptr<boost::thread> thread_;
-    boost::mutex mutex_;
+    std::auto_ptr<boost::thread>            thread_;
+    boost::mutex                            mutex_;
+    std::string                             m_threadName;
 };
 
 #endif // NETWORK_THREAD_H

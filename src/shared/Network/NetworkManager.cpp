@@ -23,7 +23,7 @@
 #include "Socket.h"
 #include "Log.h"
 
-NetworkManager::NetworkManager() : network_threads_count_(1), running_(false)
+NetworkManager::NetworkManager(std::string const& mname) : m_managerName(mname), network_threads_count_(1), running_(false)
 {
 
 }
@@ -67,8 +67,20 @@ bool NetworkManager::StartNetwork(boost::uint16_t port, std::string address)
 
     AcceptNewConnection();
 
+    std::string threadName = "\"" + m_managerName + "\" Acceptor";
+    network_threads_[0].SetName(threadName);
+    threadName = "\"" + m_managerName + "\" Service";
     for (size_t i = 0; i < network_threads_count_; ++i)
+    {
+        // set thread name
+        if (i > 0)
+        {
+            std::string tname = threadName + std::to_string(i);
+            network_threads_[i].SetName(threadName);
+        }
+
         network_threads_[i].Start();
+    }
     
     return true;
 }

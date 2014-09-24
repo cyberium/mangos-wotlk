@@ -29,12 +29,10 @@ bool RemoteAdminSocketMgr::StartNetwork(boost::uint16_t port, std::string addres
     if (running_)
         return false;
 
-    network_threads_count_ = 2;
-
     return NetworkManager::StartNetwork(port, address);
 }
 
-RemoteAdminSocketMgr::RemoteAdminSocketMgr()
+RemoteAdminSocketMgr::RemoteAdminSocketMgr() : NetworkManager("Remote Administration")
 {
 }
 
