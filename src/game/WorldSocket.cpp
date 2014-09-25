@@ -38,25 +38,25 @@ using namespace std::chrono;
 
 WorldSocket::WorldSocket(NetworkManager& socketMrg, NetworkThread& owner) :
     Socket(socketMrg, owner),
-    packet_(nullptr),
+    m_packet(nullptr),
     received_header_(false),
     m_OverSpeedPings(0),
-    session_(0),
-    seed_(static_cast<uint32>(rand32()))
+    m_session(0),
+    m_seed(static_cast<uint32>(rand32()))
 {
 }
 
 WorldSocket::~WorldSocket(void)
 {
-    if (packet_ != nullptr)
-        delete packet_;
+    if (m_packet != nullptr)
+        delete m_packet;
 }
 
 void WorldSocket::CloseSocket(void)
 {
     {
-        GuardType Guard(session_lock_);
-        session_ = NULL;
+        GuardType Guard(m_sessionLock);
+        m_session = NULL;
     }
     Socket::CloseSocket();
 }
@@ -70,17 +70,17 @@ bool WorldSocket::SendPacket(const WorldPacket& pct)
     sLog.outWorldPacketDump(native_handle(), pct.GetOpcode(), pct.GetOpcodeName(), &pct, false);
 
     ServerPktHeader header(pct.size() + 2, pct.GetOpcode());
-    crypt_.EncryptSend((uint8*) header.header, header.getHeaderLength());
+    m_crypt.EncryptSend((uint8*) header.header, header.getHeaderLength());
 
-    GuardType Guard(out_buffer_lock_);
+    GuardType Guard(m_outBufferLock);
 
-    if (out_buffer_->space() >= pct.size() + header.getHeaderLength())
+    if (m_outBuffer->space() >= pct.size() + header.getHeaderLength())
     {
         // Put the packet on the buffer.
-        if (!out_buffer_->Write(header.header, header.getHeaderLength()))
+        if (!m_outBuffer->Write(header.header, header.getHeaderLength()))
             MANGOS_ASSERT(false);
 
-        if (!pct.empty() && !out_buffer_->Write(pct.contents(), pct.size()))
+        if (!pct.empty() && !m_outBuffer->Write(pct.contents(), pct.size()))
             MANGOS_ASSERT(false);
     }
     else
@@ -101,7 +101,7 @@ bool WorldSocket::Open()
     // Send startup packet.
     WorldPacket packet(SMSG_AUTH_CHALLENGE, 40);
     packet << uint32(1);                                    // 1...31
-    packet << seed_;
+    packet << m_seed;
 
     BigNumber seed1;
     seed1.SetRand(16 * 8);
@@ -116,7 +116,7 @@ bool WorldSocket::Open()
 
 bool WorldSocket::ProcessIncomingData()
 {
-    while (read_buffer_->length() > 0)
+    while (m_readBuffer->length() > 0)
     {
         if (!received_header_)
         {
@@ -130,7 +130,7 @@ bool WorldSocket::ProcessIncomingData()
         if (!ReadPacketContent())
             return true;
 
-        if (!ProcessPacket(packet_))
+        if (!ProcessPacket(m_packet))
             return false;
     }
 
@@ -139,7 +139,7 @@ bool WorldSocket::ProcessIncomingData()
 
 bool WorldSocket::ReadPacketHeader()
 {
-    if (read_buffer_->Read((uint8*)&header_, CLIENT_PACKET_HEADER_SIZE))
+    if (m_readBuffer->Read((uint8*)&m_header, CLIENT_PACKET_HEADER_SIZE))
     {
         received_header_ = true;
         return true;
@@ -150,35 +150,35 @@ bool WorldSocket::ReadPacketHeader()
 
 bool WorldSocket::ValidatePacketHeader()
 {
-    crypt_.DecryptRecv((uint8*) &header_, CLIENT_PACKET_HEADER_SIZE);
+    m_crypt.DecryptRecv((uint8*) &m_header, CLIENT_PACKET_HEADER_SIZE);
 
-    header_.Convert();
+    m_header.Convert();
 
-    if (header_.IsValid())
+    if (m_header.IsValid())
     {
-        header_.size -= 4;
-        packet_ = new WorldPacket((Opcodes) header_.cmd, header_.size);
+        m_header.size -= 4;
+        m_packet = new WorldPacket((Opcodes) m_header.cmd, m_header.size);
 
-        if (header_.size > 0)
-            packet_->resize(header_.size);
+        if (m_header.size > 0)
+            m_packet->resize(m_header.size);
         else
-            MANGOS_ASSERT(packet_->size() == 0);
+            MANGOS_ASSERT(m_packet->size() == 0);
 
         return true;
     }
     else
-        sLog.outError("WorldSocket::ValidatePacketHeader: Client sent malformed packet size = %d , cmd = %d", header_.size, header_.cmd);
+        sLog.outError("WorldSocket::ValidatePacketHeader: Client sent malformed packet size = %d , cmd = %d", m_header.size, m_header.cmd);
 
     return false;
 }
 
 bool WorldSocket::ReadPacketContent()
 {
-    MANGOS_ASSERT(packet_ != nullptr);
+    MANGOS_ASSERT(m_packet != nullptr);
 
-    if (packet_->size() > 0)
+    if (m_packet->size() > 0)
     {
-        if (!read_buffer_->Read((uint8*) packet_->contents(), packet_->size()))
+        if (!m_readBuffer->Read((uint8*) m_packet->contents(), m_packet->size()))
             return false;
     }
 
@@ -186,12 +186,12 @@ bool WorldSocket::ReadPacketContent()
     return true;
 }
 
-bool WorldSocket::ProcessPacket(WorldPacket* new_pct)
+bool WorldSocket::ProcessPacket(WorldPacket* newPkt)
 {
     // manage memory ;)
-    std::auto_ptr<WorldPacket> aptr(new_pct);
+    std::auto_ptr<WorldPacket> aptr(newPkt);
 
-    const uint16 opcode = new_pct->GetOpcode();
+    const uint16 opcode = newPkt->GetOpcode();
 
     if (opcode >= NUM_MSG_TYPES)
     {
@@ -203,35 +203,35 @@ bool WorldSocket::ProcessPacket(WorldPacket* new_pct)
         return false;
 
     // Dump received packet.
-    sLog.outWorldPacketDump(native_handle(), new_pct->GetOpcode(), new_pct->GetOpcodeName(), new_pct, true);
+    sLog.outWorldPacketDump(native_handle(), newPkt->GetOpcode(), newPkt->GetOpcodeName(), newPkt, true);
 
     try
     {
         switch (opcode)
         {
             case CMSG_PING:
-                return HandlePing(*new_pct);
+                return HandlePing(*newPkt);
             case CMSG_AUTH_SESSION:
-                if (session_)
+                if (m_session)
                 {
                     sLog.outError("WorldSocket::ProcessIncoming: Player send CMSG_AUTH_SESSION again");
                     return false;
                 }
-                return HandleAuthSession(*new_pct);
+                return HandleAuthSession(*newPkt);
             case CMSG_KEEP_ALIVE:
-                DEBUG_LOG("CMSG_KEEP_ALIVE ,size: " SIZEFMTD " ", new_pct->size());
+                DEBUG_LOG("CMSG_KEEP_ALIVE ,size: " SIZEFMTD " ", newPkt->size());
                 return true;
             default:
             {
-                GuardType Guard(session_lock_);
+                GuardType Guard(m_sessionLock);
 
-                if (session_ != NULL)
+                if (m_session != NULL)
                 {
                     // OK ,give the packet to WorldSession
                     aptr.release();
                     // WARNING here we call it with locks held.
                     // Its possible to cause deadlock if QueuePacket calls back
-                    session_->QueuePacket(new_pct);
+                    m_session->QueuePacket(newPkt);
                     return true;
                 }
                 else
@@ -245,25 +245,25 @@ bool WorldSocket::ProcessPacket(WorldPacket* new_pct)
     catch (ByteBufferException&)
     {
         sLog.outError("WorldSocket::ProcessIncoming ByteBufferException occured while parsing an instant handled packet (opcode: %u) from client %s, accountid=%i.",
-                      opcode, GetRemoteAddress().c_str(), session_ ? session_->GetAccountId() : -1);
+                      opcode, GetRemoteAddress().c_str(), m_session ? m_session->GetAccountId() : -1);
 
         if (sLog.HasLogLevelOrHigher(LOG_LVL_DEBUG))
         {
             DEBUG_LOG("Dumping error-causing packet:");
-            new_pct->hexlike();
+            newPkt->hexlike();
         }
 
         if (sWorld.getConfig(CONFIG_BOOL_KICK_PLAYER_ON_BAD_PACKET))
         {
             DETAIL_LOG("Disconnecting session [account id %i / address %s] for badly formatted packet.",
-                       session_ ? session_->GetAccountId() : -1, GetRemoteAddress().c_str());
+                       m_session ? m_session->GetAccountId() : -1, GetRemoteAddress().c_str());
             return false;
         }
         else
             return 0;
     }
 
-    packet_ = nullptr;
+    m_packet = nullptr;
 
     return true;
 }
@@ -349,7 +349,7 @@ bool WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     v.SetHexStr(fields[5].GetString());
     s.SetHexStr(fields[6].GetString());
-    session_key_ = s;
+    m_sessionKey = s;
 
     const char* sStr = s.AsHexStr();                        // Must be freed by OPENSSL_free()
     const char* vStr = v.AsHexStr();                        // Must be freed by OPENSSL_free()
@@ -428,7 +428,7 @@ bool WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     Sha1Hash sha;
 
     uint32 t = 0;
-    uint32 seed = seed_;
+    uint32 seed = m_seed;
 
     sha.UpdateData(account);
     sha.UpdateData((uint8*) & t, 4);
@@ -463,17 +463,17 @@ bool WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     WorldSocketPtr this_session = boost::static_pointer_cast<WorldSocket>(shared_from_this());
     // NOTE ATM the socket is single-threaded, have this in mind ...
-    session_ = new WorldSession(id, this_session, AccountTypes(security), expansion, mutetime, locale);
+    m_session = new WorldSession(id, this_session, AccountTypes(security), expansion, mutetime, locale);
 
-    crypt_.Init(&K);
+    m_crypt.Init(&K);
 
-    session_->LoadGlobalAccountData();
-    session_->LoadTutorialsData();
-    session_->ReadAddonsInfo(recvPacket);
+    m_session->LoadGlobalAccountData();
+    m_session->LoadTutorialsData();
+    m_session->ReadAddonsInfo(recvPacket);
 
     boost::this_thread::sleep(boost::posix_time::milliseconds(10));
 
-    sWorld.AddSession(session_);
+    sWorld.AddSession(m_session);
 
     return true;
 }
@@ -503,9 +503,9 @@ bool WorldSocket::HandlePing(WorldPacket& recvPacket)
 
             if (max_count && m_OverSpeedPings > max_count)
             {
-                GuardType Guard(session_lock_);
+                GuardType Guard(m_sessionLock);
 
-                if (session_ && session_->GetSecurity() == SEC_PLAYER)
+                if (m_session && m_session->GetSecurity() == SEC_PLAYER)
                 {
                     sLog.outError("WorldSocket::HandlePing: Player kicked for "
                                   "overspeeded pings address = %s",
@@ -521,10 +521,10 @@ bool WorldSocket::HandlePing(WorldPacket& recvPacket)
 
     // critical section
     {
-        GuardType Guard(session_lock_);
+        GuardType Guard(m_sessionLock);
 
-        if (session_)
-            session_->SetLatency(latency);
+        if (m_session)
+            m_session->SetLatency(latency);
         else
         {
             sLog.outError("WorldSocket::HandlePing: peer sent CMSG_PING, "

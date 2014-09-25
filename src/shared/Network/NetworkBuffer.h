@@ -55,13 +55,13 @@ public:
     const uint32 capacity() const;
 
 private:
-    bool data_allocated_;
-    uint8* data_;
+    bool    m_dataAllocated;
+    uint8*  m_data;
 
-    uint32 write_position_;
-    uint32 read_position_;
+    uint32  m_writePosition;
+    uint32  m_readPosition;
 
-    uint32 size_;
+    uint32  m_size;
 };
 
 #endif // NETWORK_BUFFER_H

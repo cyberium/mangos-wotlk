@@ -40,9 +40,9 @@ private:
     virtual bool OnSocketOpen(const SocketPtr& socket) override;
     virtual SocketPtr CreateSocket(NetworkThread& owner) override;
 
-    int m_SockOutKBuff;
-    int m_SockOutUBuff;
-    bool m_UseNoDelay;
+    int     m_SockOutKBuff;
+    int     m_SockOutUBuff;
+    bool    m_UseNoDelay;
 };
 
 #define sWorldSocketMgr WorldSocketMgr::Instance()

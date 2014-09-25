@@ -201,7 +201,7 @@ bool AuthSocket::ProcessIncomingData()
     uint8 _cmd;
     while (1)
     {
-        if (!read_buffer_->ReadNoConsume(&_cmd, 1))
+        if (!m_readBuffer->ReadNoConsume(&_cmd, 1))
             return true;
 
         size_t i;
@@ -236,9 +236,9 @@ bool AuthSocket::ProcessIncomingData()
 
 bool AuthSocket::SendPacket(const char* buf, size_t len)
 {
-    GuardType Guard(out_buffer_lock_);
+    GuardType Guard(m_outBufferLock);
 
-    if (out_buffer_->Write((uint8*) buf, len))
+    if (m_outBuffer->Write((uint8*) buf, len))
     {
         StartAsyncSend();
         return true;
@@ -251,17 +251,17 @@ bool AuthSocket::SendPacket(const char* buf, size_t len)
 
 size_t AuthSocket::ReceivedDataLength(void) const
 {
-    return read_buffer_->length();
+    return m_readBuffer->length();
 }
 
 bool AuthSocket::Read(char* buf, size_t len)
 {
-    return read_buffer_->Read((uint8*) buf, len);
+    return m_readBuffer->Read((uint8*) buf, len);
 }
 
 void AuthSocket::ReadSkip(size_t len)
 {
-    read_buffer_->Consume(len);
+    m_readBuffer->Consume(len);
 }
 
 bool AuthSocket::HandleLogonChallenge()

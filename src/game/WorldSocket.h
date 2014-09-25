@@ -145,7 +145,7 @@ public:
 
     virtual void CloseSocket(void) override;
     bool SendPacket(const WorldPacket& pct);
-    BigNumber& GetSessionKey() { return session_key_; }
+    BigNumber& GetSessionKey() { return m_sessionKey; }
 
 protected:
     virtual bool Open() override;
@@ -164,20 +164,20 @@ private:
     bool received_header_;
 
     // Client packet
-    ClientPktHeader header_;
-    WorldPacket* packet_;
+    ClientPktHeader m_header;
+    WorldPacket* m_packet;
 
     // Used for de-/encrypting packet headers
-    AuthCrypt crypt_;
+    AuthCrypt m_crypt;
 
-    uint32 seed_;
-    BigNumber session_key_;
+    uint32 m_seed;
+    BigNumber m_sessionKey;
 
     // Session to which received packets are routed
-    WorldSession* session_;
+    WorldSession* m_session;
 
     // Mutex lock to protect session_
-    LockType session_lock_;
+    LockType m_sessionLock;
 
     // Time in which the last ping was received
     std::chrono::system_clock::time_point m_LastPingTime;

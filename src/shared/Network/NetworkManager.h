@@ -33,8 +33,8 @@ public:
     virtual bool StartNetwork(boost::uint16_t port, std::string address);
     void StopNetwork();
 
-    const std::string& GetBindAddress() { return address_; }
-    boost::uint16_t GetBindPort() { return port_; }
+    const std::string& GetBindAddress() { return m_address; }
+    boost::uint16_t GetBindPort() { return m_port; }
 
 protected:
     NetworkManager(std::string const& mname);
@@ -45,22 +45,20 @@ protected:
     virtual bool OnSocketOpen(const SocketPtr& socket);
     virtual void OnSocketClose(const SocketPtr& socket);
 
-    size_t network_threads_count_;
-    bool running_;
+    size_t  m_networkThreadsCount;
+    bool    m_running;
 
 private:
     void AcceptNewConnection();
     void OnNewConnection(SocketPtr connection, const boost::system::error_code& error);
-
     NetworkThread& get_acceptor_thread();
     NetworkThread& get_network_thread_for_new_connection();
 
-    std::string address_;
-    boost::uint16_t port_;
-    std::string m_managerName;
-
-    std::auto_ptr<protocol::Acceptor> acceptor_;
-    boost::scoped_array<NetworkThread> network_threads_;
+    std::string                        m_address;
+    boost::uint16_t                    m_port;
+    std::string                        m_managerName;
+    std::auto_ptr<protocol::Acceptor>  m_acceptor;
+    boost::scoped_array<NetworkThread> m_networkThreads;
 };
 
 #endif // NETWORK_MANAGER_H

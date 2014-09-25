@@ -46,32 +46,31 @@ public:
 
     virtual void CloseSocket(void);
 
-    bool IsClosed(void) const { return closed_; }
-    const std::string& GetRemoteAddress(void) const { return address_; }
+    bool IsClosed(void) const { return m_closed; }
+    inline const std::string& GetRemoteAddress(void) const { return m_address; }
 
     bool EnableTCPNoDelay(bool enable);
     bool SetSendBufferSize(int size);
     void SetOutgoingBufferSize(size_t size);
 
-    protocol::Socket& socket() { return socket_; }
-    NetworkThread& owner() { return owner_; }
+    inline protocol::Socket& socket() { return m_socket; }
+    inline NetworkThread& owner() { return m_owner; }
 
 protected:
     virtual bool Open();
     void StartAsyncSend();
     virtual bool ProcessIncomingData() = 0;
-
     uint32 native_handle();
 
-    typedef boost::mutex LockType;
+    typedef boost::mutex                LockType;
     typedef boost::lock_guard<LockType> GuardType;
-    LockType out_buffer_lock_;
 
-    std::auto_ptr<NetworkBuffer> out_buffer_;
-    std::auto_ptr<NetworkBuffer> read_buffer_;
+    LockType                     m_outBufferLock;
+    std::auto_ptr<NetworkBuffer> m_outBuffer;
+    std::auto_ptr<NetworkBuffer> m_readBuffer;
 
-    NetworkManager& manager_;
-    NetworkThread& owner_;
+    NetworkManager& m_manager;
+    NetworkThread& m_owner;
 
 private:
     void StartAsyncRead();
@@ -80,14 +79,13 @@ private:
     void OnWriteComplete(const boost::system::error_code& error, size_t bytes_transferred);
     void OnReadComplete(const boost::system::error_code& error, size_t bytes_transferred);
     void OnError(const boost::system::error_code& error);
-
     std::string ObtainRemoteAddress() const;
 
-    protocol::Socket socket_;
-    size_t outgoing_buffer_size_;
-    std::string address_;
-    bool write_operation_;
-    bool closed_;
+    protocol::Socket  m_socket;
+    size_t            m_outgoingBufferSize;
+    std::string       m_address;
+    bool              m_writeOperation;
+    bool              m_closed;
 
     static const std::string UNKNOWN_NETWORK_ADDRESS;;
 };

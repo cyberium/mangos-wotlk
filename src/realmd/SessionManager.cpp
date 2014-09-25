@@ -31,10 +31,10 @@ SessionManager::~SessionManager()
 
 bool SessionManager::StartNetwork(boost::uint16_t port, std::string address)
 {
-    if (running_)
+    if (m_running)
         return false;
     
-    network_threads_count_ = 2;
+    m_networkThreadsCount = 2;
 
     return NetworkManager::StartNetwork(port, address);
 }
