@@ -489,13 +489,10 @@ extern int main(int argc, char** argv)
 
     // Start soap serving thread
     MaNGOS::Thread* soap_thread = NULL;
-
+    std::auto_ptr<SoapMgr> soapMgr(new SoapMgr());
     if (sConfig.GetBoolDefault("SOAP.Enabled", false))
     {
-        MaNGOSsoapRunnable* runnable = new MaNGOSsoapRunnable();
-
-        runnable->setListenArguments(sConfig.GetStringDefault("SOAP.IP", "127.0.0.1"), sConfig.GetIntDefault("SOAP.Port", 7878));
-        soap_thread = new MaNGOS::Thread(runnable);
+        soapMgr->StartNetwork(sConfig.GetStringDefault("SOAP.IP", "127.0.0.1"), sConfig.GetIntDefault("SOAP.Port", 7878));
     }
 
     // Start up freeze catcher thread
@@ -558,11 +555,9 @@ extern int main(int argc, char** argv)
     }
 
     // Stop soap thread
-    if (soap_thread)
+    if (soapMgr.get())
     {
-        soap_thread->wait();
-        soap_thread->destroy();
-        delete soap_thread;
+        soapMgr->StopNetwork();
     }
 
     // Set server offline in realmlist

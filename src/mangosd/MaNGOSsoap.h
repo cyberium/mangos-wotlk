@@ -19,8 +19,6 @@
 #ifndef MANGOSSOAP_H
 #define MANGOSSOAP_H
 
-#include <ace/Semaphore.h>
-#include <ace/Task.h>
 #include "AccountMgr.h"
 #include "Common.h"
 #include "Log.h"
@@ -28,83 +26,48 @@
 #include "soapStub.h"
 #include "World.h"
 
-class MaNGOSsoapRunnable : public MaNGOS::Runnable
+class SoapMgr
 {
 public:
-    MaNGOSsoapRunnable() { }
+    SoapMgr() : m_running(false) { }
 
-    void run() override;
-
-    void setListenArguments(std::string host, uint16 port)
-    {
-        m_host = host;
-        m_port = port;
-    }
+    void StartNetwork(std::string host, uint16 port);
+    void StopNetwork();
 
 private:
-    std::string m_host;
-    uint16 m_port;
-};
+    void NetworkThread();
 
-class SOAPWorkingThread : public ACE_Task<ACE_MT_SYNCH>
-{
-public:
-    SOAPWorkingThread() { }
-
-    virtual int svc(void) override
-    {
-        while (1)
-        {
-            ACE_Message_Block* mb = 0;
-            if (this->getq(mb) == -1)
-            {
-                ACE_DEBUG((LM_INFO, ACE_TEXT("(%t) Shutting down\n")));
-                break;
-            }
-
-            // Process the message.
-            process_message(mb);
-        }
-
-        return 0;
-    }
-
-private:
-    void process_message(ACE_Message_Block* mb);
+    std::string                      m_host;
+    uint16                           m_port;
+    bool                             m_running;
+    boost::shared_ptr<boost::thread> m_networkThread;
 };
 
 class SOAPCommand
 {
 public:
-    SOAPCommand(): pendingCommands(0, USYNC_THREAD, "pendingCommands") { }
-
-    ~SOAPCommand() { }
-
+    SOAPCommand() : finished(false), m_success(false) {}
+    boost::mutex localMutex;
+    boost::condition_variable conditionVariable;
     void appendToPrintBuffer(const char* msg)
     {
         m_printBuffer += msg;
     }
-
-    ACE_Semaphore pendingCommands;
-
     void setCommandSuccess(bool val)
     {
         m_success = val;
     }
-
     bool hasCommandSucceeded()
     {
         return m_success;
     }
-
     static void print(void* callbackArg, const char* msg)
     {
         ((SOAPCommand*)callbackArg)->appendToPrintBuffer(msg);
     }
-
     static void commandFinished(void* callbackArg, bool success);
-
     bool m_success;
+    bool finished;
     std::string m_printBuffer;
 };
 

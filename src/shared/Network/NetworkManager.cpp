@@ -75,7 +75,7 @@ bool NetworkManager::StartNetwork(boost::uint16_t port, std::string address)
         // set thread name
         if (i > 0)
         {
-            std::string tname = threadName + std::to_string(uint32(i));
+            std::string tname = threadName;
             m_networkThreads[i].SetName(threadName);
         }
 
@@ -89,14 +89,14 @@ void NetworkManager::StopNetwork()
 {
     if (m_running)
     {
+        m_running = false;
+
         if (m_acceptor.get())
             m_acceptor->cancel();
 
         if (m_networkThreads)
             for (size_t i = 0; i < m_networkThreadsCount; ++i)
                 m_networkThreads[i].Stop();
-
-        m_running = false;
     }
 }
 
@@ -127,7 +127,8 @@ void NetworkManager::OnNewConnection(SocketPtr connection, const boost::system::
 {
     if (error)
     {
-        sLog.outError("Error accepting new client connection!");
+        if (m_running) // avoid showing an error that may occur durring shutdown
+            sLog.outError("Error accepting new client connection!");
         return;
     }
     
