@@ -260,8 +260,10 @@ void WorldSession::HandleGroupDeclineOpcode(WorldPacket& /*recv_data*/)
 void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket& recv_data)
 {
     ObjectGuid guid;
+    std::string reason;
+
     recv_data >> guid;
-    recv_data.read_skip<std::string>();                     // reason
+    recv_data >> reason;                     // reason
 
     // can't uninvite yourself
     if (guid == GetPlayer()->GetObjectGuid())
@@ -280,6 +282,12 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket& recv_data)
     Group* grp = GetPlayer()->GetGroup();
     if (!grp)
         return;
+
+    if (grp->IsMember(guid) && grp->isLFGGroup())
+    {
+        sLFGMgr.InitBoot(GetPlayer(), guid, reason);
+        return;
+    }
 
     if (grp->IsMember(guid))
     {
@@ -325,6 +333,12 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket& recv_data)
 
     if (ObjectGuid guid = grp->GetMemberGuid(membername))
     {
+		if (grp->IsMember(guid) && grp->isLFGGroup())
+		{
+			sLFGMgr.InitBoot(GetPlayer(), guid, "");
+			return;
+		}
+
         Player::RemoveFromGroup(grp, guid);
         return;
     }
@@ -355,7 +369,8 @@ void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket& recv_data)
     /********************/
 
     // everything is fine, do it
-    group->ChangeLeader(guid);
+    sLFGMgr.GetLFGPlayerState(GetPlayer()->GetObjectGuid())->RemoveRole(ROLE_LEADER);
+	group->ChangeLeader(guid);
 }
 
 void WorldSession::HandleGroupDisbandOpcode(WorldPacket& /*recv_data*/)

@@ -26,6 +26,14 @@
 
 typedef std::vector<std::string> Tokens;
 
+struct TokensEx: public std::vector<char*>
+{
+    TokensEx(const std::string &src, const char sep, uint32 vectorReserve = 0);
+    ~TokensEx() { delete[] m_str; }
+
+    char* m_str;
+};
+
 Tokens StrSplit(const std::string& src, const std::string& sep);
 uint32 GetUInt32ValueFromArray(Tokens const& data, uint16 index);
 float GetFloatValueFromArray(Tokens const& data, uint16 index);

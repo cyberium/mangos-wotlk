@@ -190,6 +190,9 @@ DBCStorage <WMOAreaTableEntry>  sWMOAreaTableStore(WMOAreaTableEntryfmt);
 DBCStorage <WorldMapAreaEntry>  sWorldMapAreaStore(WorldMapAreaEntryfmt);
 DBCStorage <WorldMapOverlayEntry> sWorldMapOverlayStore(WorldMapOverlayEntryfmt);
 DBCStorage <WorldSafeLocsEntry> sWorldSafeLocsStore(WorldSafeLocsEntryfmt);
+DBCStorage <LFGDungeonEntry> sLFGDungeonStore(LFGDungeonEntryfmt);
+DBCStorage <LFGDungeonExpansionEntry> sLFGDungeonExpansionStore(LFGDungeonExpansionEntryfmt);
+LFGDungeonExpansionMap sLFGDungeonExpansionMap;
 
 typedef std::list<std::string> StoreProblemList;
 
@@ -364,7 +367,7 @@ void LoadDBCStores(const std::string& dataPath)
         exit(1);
     }
 
-    const uint32 DBCFilesCount = 94;
+    const uint32 DBCFilesCount = 96;
 
     BarGoLink bar(DBCFilesCount);
 
@@ -456,6 +459,14 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales, bar, bad_dbc_files, sItemRandomPropertiesStore, dbcPath, "ItemRandomProperties.dbc");
     LoadDBC(availableDbcLocales, bar, bad_dbc_files, sItemRandomSuffixStore,    dbcPath, "ItemRandomSuffix.dbc");
     LoadDBC(availableDbcLocales, bar, bad_dbc_files, sItemSetStore,             dbcPath, "ItemSet.dbc");
+    LoadDBC(availableDbcLocales, bar, bad_dbc_files, sLFGDungeonStore,          dbcPath, "LFGDungeons.dbc");
+    LoadDBC(availableDbcLocales, bar, bad_dbc_files, sLFGDungeonExpansionStore, dbcPath, "LFGDungeonExpansion.dbc");
+    // fill data
+    for(uint32 i = 1; i < sLFGDungeonExpansionStore.GetNumRows(); ++i)
+    {
+        if(LFGDungeonExpansionEntry const* entry = sLFGDungeonExpansionStore.LookupEntry(i))
+            sLFGDungeonExpansionMap[MAKE_PAIR32(entry->dungeonID,entry->expansion)] = entry;
+    }
     LoadDBC(availableDbcLocales, bar, bad_dbc_files, sLiquidTypeStore,          dbcPath, "LiquidType.dbc");
     LoadDBC(availableDbcLocales, bar, bad_dbc_files, sLockStore,                dbcPath, "Lock.dbc");
     LoadDBC(availableDbcLocales, bar, bad_dbc_files, sMailTemplateStore,        dbcPath, "MailTemplate.dbc");

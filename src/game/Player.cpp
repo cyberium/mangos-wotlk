@@ -569,6 +569,9 @@ Player::~Player()
 {
     CleanupsBeforeDelete();
 
+	if(GetObjectGuid())
+        sLFGMgr.RemoveLFGState(GetObjectGuid());
+
     // it must be unloaded already in PlayerLogout and accessed only for loggined player
     // m_social = NULL;
 
@@ -2575,6 +2578,8 @@ void Player::GiveLevel(uint32 level)
         MailDraft(mailReward->mailTemplateId).SendMailTo(this, MailSender(MAIL_CREATURE, mailReward->senderEntry));
 
     GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL);
+    sLFGMgr.GetLFGPlayerState(GetObjectGuid())->Update();
+
 }
 
 void Player::UpdateFreeTalentPoints(bool resetIfNeed)
@@ -13932,15 +13937,18 @@ void Player::RewardQuest(Quest const* pQuest, uint32 reward, Object* questGiver,
 
     bool handled = false;
 
-    switch (questGiver->GetTypeId())
-    {
-        case TYPEID_UNIT:
-            handled = sScriptMgr.OnQuestRewarded(this, (Creature*)questGiver, pQuest);
-            break;
-        case TYPEID_GAMEOBJECT:
-            handled = sScriptMgr.OnQuestRewarded(this, (GameObject*)questGiver, pQuest);
-            break;
-    }
+	if(questGiver)
+	{
+		switch (questGiver->GetTypeId())
+		{
+			case TYPEID_UNIT:
+				handled = sScriptMgr.OnQuestRewarded(this, (Creature*)questGiver, pQuest);
+				break;
+			case TYPEID_GAMEOBJECT:
+				handled = sScriptMgr.OnQuestRewarded(this, (GameObject*)questGiver, pQuest);
+				break;
+		}
+	}
 
     if (!handled && pQuest->GetQuestCompleteScript() != 0)
         GetMap()->ScriptsStart(sQuestEndScripts, pQuest->GetQuestCompleteScript(), questGiver, this, Map::SCRIPT_EXEC_PARAM_UNIQUE_BY_SOURCE);
@@ -15852,6 +15860,12 @@ bool Player::LoadFromDB(ObjectGuid guid, SqlQueryHolder* holder)
 
     _LoadEquipmentSets(holder->GetResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
 
+    sLFGMgr.CreateLFGState(GetObjectGuid());
+    if (!GetGroup() || !GetGroup()->isLFDGroup())
+    {
+        sLFGMgr.RemoveMemberFromLFDGroup(GetGroup(),GetObjectGuid());
+    }
+
     return true;
 }
 
@@ -16711,6 +16725,8 @@ void Player::_LoadGroup(QueryResult* result)
                 SetDungeonDifficulty(group->GetDungeonDifficulty());
                 SetRaidDifficulty(group->GetRaidDifficulty());
             }
+            if (group->isLFDGroup())
+                sLFGMgr.LoadLFDGroupPropertiesForPlayer(this);
         }
     }
 }
@@ -23199,3 +23215,62 @@ AreaLockStatus Player::GetAreaTriggerLockStatus(AreaTrigger const* at, Difficult
 
     return AREA_LOCKSTATUS_OK;
 };
+
+AreaLockStatus Player::GetAreaLockStatus(uint32 mapId, Difficulty difficulty)
+{
+	uint32 miscRequirements = 0;
+	AreaLockStatus rv = GetAreaTriggerLockStatus(sObjectMgr.GetMapEntranceTrigger(mapId), difficulty, miscRequirements);
+    return rv;
+};
+
+void Player::JoinLFGChannel()
+{
+    for (JoinedChannelsList::iterator i = m_channels.begin(); i != m_channels.end(); ++i)
+    {
+        if ((*i)->IsLFG())
+        {
+            (*i)->Join(this, "");
+            break;
+        }
+    }
+}
+
+void Player::InterruptTaxiFlying()
+{
+    // stop flight if need
+    if (IsTaxiFlying())
+    {
+        GetMotionMaster()->MovementExpired();
+        m_taxi.ClearTaxiDestinations();
+    }
+    // save only in non-flight case
+    else
+        SaveRecallPosition();
+}
+
+uint8 Player::GetTalentsCount(uint8 tab)
+{
+    if (tab > 2)
+        return 0;
+
+    uint8 talentCount = 0;
+
+    uint32 const* talentTabIds = GetTalentTabPages(getClass());
+
+    uint32 talentTabId = talentTabIds[tab];
+
+    for (PlayerTalentMap::iterator iter = m_talents[m_activeSpec].begin(); iter != m_talents[m_activeSpec].end(); ++iter)
+    {
+        PlayerTalent talent = (*iter).second;
+
+        if (talent.state == PLAYERSPELL_REMOVED)
+            continue;
+
+        // skip another tab talents
+        if (talent.talentEntry->TalentTab != talentTabId)
+            continue;
+
+        talentCount += talent.currentRank + 1;
+    }
+    return talentCount;
+}

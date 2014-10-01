@@ -192,6 +192,7 @@ enum eConfigUInt32Values
     CONFIG_UINT32_GUID_RESERVE_SIZE_GAMEOBJECT,
     CONFIG_UINT32_MIN_LEVEL_FOR_RAID,
     CONFIG_UINT32_CREATURE_RESPAWN_AGGRO_DELAY,
+    CONFIG_UINT32_LFG_MAXKICKS,
     CONFIG_UINT32_VALUE_COUNT
 };
 
@@ -346,6 +347,10 @@ enum eConfigBoolValues
     CONFIG_BOOL_PET_UNSUMMON_AT_MOUNT,
     CONFIG_BOOL_MMAP_ENABLED,
     CONFIG_BOOL_PLAYER_COMMANDS,
+    CONFIG_BOOL_LFG_ENABLE,
+    CONFIG_BOOL_LFR_ENABLE,
+    CONFIG_BOOL_LFG_DEBUG_ENABLE,
+    CONFIG_BOOL_LFR_EXTEND,
     CONFIG_BOOL_VALUE_COUNT
 };
 
@@ -595,6 +600,9 @@ class World
         char const* GetDBVersion() { return m_DBVersion.c_str(); }
         char const* GetCreatureEventAIVersion() { return m_CreatureEventAIVersion.c_str(); }
 
+        // Disable dungeons for LFG system
+        void setDisabledMapIdForDungeonFinder(const char* areas);
+        bool IsDungeonMapIdDisable(uint32 mapId);
 
         /**
         * \brief: force all client to request player data
@@ -697,6 +705,9 @@ class World
         // used versions
         std::string m_DBVersion;
         std::string m_CreatureEventAIVersion;
+
+        // Disable dungeons for LFG system
+        UNORDERED_SET<uint32> disabledMapIdForDungeonFinder; // set of MapIds which are disabled for DungeonFinder
 };
 
 extern uint32 realmID;

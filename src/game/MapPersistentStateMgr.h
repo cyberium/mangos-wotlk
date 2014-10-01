@@ -217,6 +217,10 @@ class DungeonPersistentState : public MapPersistentState
         // mask of completed encounters
         uint32 GetCompletedEncountersMask() { return m_completedEncountersMask; }
 
+		//bool IsCompleted();
+		//// verify credit entry NPC is on map and dead
+		//bool IsDeadOnMap(uint32 creature_entry);
+
         /* Saved when the instance is generated for the first time */
         void SaveToDB();
         /* When the instance is being reset (permanently deleted) */

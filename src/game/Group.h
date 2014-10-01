@@ -27,6 +27,7 @@
 #include "LootMgr.h"
 #include "DBCEnums.h"
 #include "SharedDefines.h"
+#include "LFG.h"
 
 #include <map>
 #include <vector>
@@ -98,8 +99,9 @@ enum GroupType                                              // group type flags?
     GROUPTYPE_BG     = 0x01,
     GROUPTYPE_RAID   = 0x02,
     GROUPTYPE_BGRAID = GROUPTYPE_BG | GROUPTYPE_RAID,       // mask
+    GROUPTYPE_UNK1   = 0x04,                                // 0x04?
     // 0x04?
-    GROUPTYPE_LFD    = 0x08,
+    GROUPTYPE_LFD    = 0x08
     // 0x10, leave/change group?, I saw this flag when leaving group and after leaving BG while in group
 };
 
@@ -194,6 +196,7 @@ class MANGOS_DLL_SPEC Group
             std::string name;
             uint8       group;
             bool        assistant;
+            LFGRoleMask roles;
             uint32      lastMap;
         };
         typedef std::list<MemberSlot> MemberSlotList;
@@ -207,12 +210,13 @@ class MANGOS_DLL_SPEC Group
 
     public:
         Group();
+        Group(GroupType type);
         ~Group();
 
         // group manipulation methods
         bool   Create(ObjectGuid guid, const char* name);
         bool   LoadGroupFromDB(Field* fields);
-        bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant);
+        bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant, LFGRoleMask roles);
         bool   AddInvite(Player* player);
         uint32 RemoveInvite(Player* player);
         void   RemoveAllInvites();
@@ -341,6 +345,9 @@ class MANGOS_DLL_SPEC Group
 
         bool SetPlayerMap(ObjectGuid guid, uint32 mapid);
 
+        GroupType GetGroupType() const { return m_groupType; };
+        bool IsNeedSave() const;
+
         /*********************************************************/
         /***                   LOOT SYSTEM                     ***/
         /*********************************************************/
@@ -365,9 +372,17 @@ class MANGOS_DLL_SPEC Group
         InstanceGroupBind* GetBoundInstance(Map* aMap, Difficulty difficulty);
         BoundInstancesMap& GetBoundInstances(Difficulty difficulty) { return m_boundInstances[difficulty]; }
 
+        // LFG
+        bool ConvertToLFG(LFGType type);
+        bool isLFDGroup()  const { return m_groupType & GROUPTYPE_LFD; }
+        bool isLFGGroup()  const { return ((m_groupType & GROUPTYPE_LFD) && !(m_groupType & GROUPTYPE_RAID)) ; }
+        bool isLFRGroup()  const { return ((m_groupType & GROUPTYPE_LFD) && (m_groupType & GROUPTYPE_RAID)) ; }
+        void SetGroupRoles(ObjectGuid guid, LFGRoleMask roles);
+        LFGRoleMask GetGroupRoles(ObjectGuid guid);
+
     protected:
         bool _addMember(ObjectGuid guid, const char* name, bool isAssistant = false);
-        bool _addMember(ObjectGuid guid, const char* name, bool isAssistant, uint8 group);
+        bool _addMember(ObjectGuid guid, const char* name, bool isAssistant, uint8 group, LFGRoleMask roles);
         bool _removeMember(ObjectGuid guid);                // returns true if leader has changed
         void _setLeader(ObjectGuid guid);
 

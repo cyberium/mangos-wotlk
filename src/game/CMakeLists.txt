@@ -171,6 +171,10 @@ set(SRC_GRP_OBJECT
     ItemEnchantmentMgr.cpp
     ItemEnchantmentMgr.h
     ItemPrototype.h
+    LFG.cpp
+    LFG.h
+    LFGMgr.cpp
+    LFGMgr.h
     LootMgr.cpp
     LootMgr.h
     NullCreatureAI.cpp

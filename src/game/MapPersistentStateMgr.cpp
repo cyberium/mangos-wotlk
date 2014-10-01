@@ -301,16 +301,44 @@ void DungeonPersistentState::UpdateEncounterState(EncounterCreditType type, uint
 
         if (iter->second->creditType == type && Difficulty(dbcEntry->Difficulty) == GetDifficulty() && dbcEntry->mapId == GetMapId())
         {
-            m_completedEncountersMask |= 1 << dbcEntry->encounterIndex;
+			uint32 oldMask = m_completedEncountersMask;
+			m_completedEncountersMask |= 1 << dbcEntry->encounterIndex;
 
-            CharacterDatabase.PExecute("UPDATE instance SET encountersMask = '%u' WHERE id = '%u'", m_completedEncountersMask, GetInstanceId());
+            DungeonMap* dungeon = (DungeonMap*)GetMap();
 
-            DEBUG_LOG("DungeonPersistentState: Dungeon %s (Id %u) completed encounter %s", GetMap()->GetMapName(), GetInstanceId(), dbcEntry->encounterName[sWorld.GetDefaultDbcLocale()]);
-            if (/*uint32 dungeonId =*/ iter->second->lastEncounterDungeon)
+            if (!dungeon || dungeon->GetPlayers().isEmpty())
+                return;
+
+            Player* player = dungeon->GetPlayers().begin()->getSource();
+
+            if ( m_completedEncountersMask != oldMask)
             {
-                DEBUG_LOG("DungeonPersistentState:: Dungeon %s (Instance-Id %u) completed last encounter %s", GetMap()->GetMapName(), GetInstanceId(), dbcEntry->encounterName[sWorld.GetDefaultDbcLocale()]);
-                // Place LFG reward here
-            }
+                if (dungeon && player)
+                    dungeon->PermBindAllPlayers(player, dungeon->IsRaidOrHeroicDungeon());
+
+				CharacterDatabase.PExecute("UPDATE instance SET encountersMask = '%u' WHERE id = '%u'", m_completedEncountersMask, GetInstanceId());
+
+                uint32 dungeonId = iter->second->lastEncounterDungeon;
+
+				DEBUG_LOG("DungeonPersistentState: Dungeon %s (Id %u) completed encounter %s", GetMap()->GetMapName(), GetInstanceId(), dbcEntry->encounterName[sWorld.GetDefaultDbcLocale()]);
+                if (dungeon && player && player->GetGroup() && player->GetGroup()->isLFGGroup())
+                {
+                    sLFGMgr.DungeonEncounterReached(player->GetGroup());
+
+                    //if ((sWorld.getConfig(CONFIG_BOOL_LFG_ONLYLASTENCOUNTER) && dungeonId)
+                    //    || IsCompleted())
+                    //    sLFGMgr.SendLFGRewards(player->GetGroup());
+					
+					// this is the only way to detect dungeon instance completion
+					// checking dungeon encounters individually does not work reliably
+					// Since adjacent grids often need loading, they can contain bosses from other instances and
+					// we have no way to identify which NPCs belong to which dungeon instances in those cases where
+					// the map Id is shared between several instances.
+					// TrinityCore seems to have reached the same conclusion.
+					if(dungeonId)
+						sLFGMgr.SendLFGRewards(player->GetGroup());
+                }
+			}
             return;
         }
     }
@@ -1128,3 +1156,71 @@ void MapPersistentStateManager::LoadGameobjectRespawnTimes()
     sLog.outString(">> Loaded %u gameobject respawn times", count);
     sLog.outString();
 }
+
+//bool DungeonPersistentState::IsCompleted()
+//{
+//    DungeonEncounterMap const* encounterList = sObjectMgr.GetDungeonEncounters();
+//
+//    if (!encounterList)
+//        return false;
+//
+//    for (DungeonEncounterMap::const_iterator itr = encounterList->begin(); itr != encounterList->end(); ++itr)
+//    {
+//        DungeonEncounter const* encounter = itr->second;
+//
+//		if (!encounter)
+//            continue;
+//
+//        if (GetMapId() != encounter->dbcEntry->mapId  || GetDifficulty() != encounter->dbcEntry->Difficulty )
+//            continue;
+//
+//		// reason for this is the fact that dungeon instances may share the same map Id:
+//		// DireMaul (MapId 429) consists of East, West and North instances; this means that simply checking
+//		// the mapId above is insufficient to determine whether an encounter is actually part of this dungeon
+//		// instance and needs to be checked against our m_completedEncountersMask
+//		if(encounter->creditType == ENCOUNTER_CREDIT_KILL_CREATURE && !IsDeadOnMap(encounter->creditEntry))
+//			continue;
+//
+//        if (!(m_completedEncountersMask & ( 1 << encounter->dbcEntry->encounterIndex)))
+//            return false;
+//    }
+//    return true;
+//}
+//
+//bool DungeonPersistentState::IsDeadOnMap(uint32 entry)
+//{
+//	bool ret = true;
+//	// this is potentially slow but will only get called once for every boss encounter on this map
+//	// if there's a faster way to obtain the objectguid of a spawn for a creature entry, change this
+//	QueryResult* result = WorldDatabase.PQuery("SELECT guid FROM creature WHERE id=%u AND map=%u", entry, GetMapId());
+//	if(result)
+//	{
+//		if(result->GetRowCount() > 1)
+//			 sLog.outString("ENCOUNTER_CREDIT_KILL_CREATURE: found %u instances of creature id %u on map %u", result->GetRowCount(), entry, GetMapId());
+//
+//		// scenario 1: (normal case) - single row result corresponding to the boss NPC
+//		// scenario 2: multi row result (NPC ID with several spawn locations)
+//		//             unknown if scenario 2 is valid in the context of encounter kill credit creature
+//		//             implemented a "must be all on map and dead" policy for scenario 2
+//
+//		// valid credit if creature is on the map and dead
+//        do
+//        {
+//            Field* fields = result->Fetch();
+//			
+//			ObjectGuid guid(HIGHGUID_UNIT, entry, fields->GetUInt32());
+//
+//			Creature* creature = GetMap()->GetCreature(guid);
+//			if(!creature || (creature && !creature->isDead()))
+//				ret = false;
+//        }
+//        while (ret && result->NextRow());
+//		delete result;
+//	}
+//	else
+//	{
+//   	    sLog.outString("ENCOUNTER_CREDIT_KILL_CREATURE: creature id %u on map %u does not exist in DB.",  entry, GetMapId());
+//		ret = false;
+//	}
+//	return ret;
+//}
