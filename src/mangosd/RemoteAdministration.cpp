@@ -22,7 +22,7 @@
 #include "ObjectMgr.h"
 #include "Language.h"
 #include "AccountMgr.h"
-#include "Config\Config.h"
+#include "Config/Config.h"
 
 bool RemoteAdminSocketMgr::StartNetwork(boost::uint16_t port, std::string address)
 {

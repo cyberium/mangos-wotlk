@@ -447,6 +447,9 @@ extern int main(int argc, char** argv)
 
 #ifndef WIN32
     detachDaemon();
+    boost::asio::signal_set signals(IoService, SIGINT, SIGTERM);
+#else
+    boost::asio::signal_set signals(IoService, SIGINT, SIGTERM, SIGBREAK);
 #endif
     // Server loaded successfully => enable async DB requests
     // This is done to forbid any async transactions during server startup!
@@ -455,7 +458,6 @@ extern int main(int argc, char** argv)
     LoginDatabase.AllowAsyncTransactions();
 
     // Register a signal handler to catch shutdown event.
-    boost::asio::signal_set signals(IoService, SIGINT, SIGTERM, SIGBREAK);
     signals.async_wait(SignalHandler);
 
     // Set realmbuilds depend on mangosd expected builds, and set server online
