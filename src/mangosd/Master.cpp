@@ -16,19 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/** \file
-    \ingroup mangosd
-*/
-
 #ifndef WIN32
 #include "PosixDaemon.h"
 #endif
 
-#include "WorldSocketMgr.h"
-#include "Common.h"
 #include "Master.h"
+#include "Common.h"
 #include "WorldSocket.h"
-#include "WorldRunnable.h"
 #include "World.h"
 #include "Log.h"
 #include "Timer.h"
@@ -43,10 +37,14 @@
 #include "MaNGOSsoap.h"
 #include "MassMailMgr.h"
 #include "DBCStores.h"
+#include "MapManager.h"
+#include "WorldSocketMgr.h"
 
 #include <ace/OS_NS_signal.h>
 #include <ace/TP_Reactor.h>
 #include <ace/Dev_Poll_Reactor.h>
+
+#define WORLD_SLEEP_CONST 50
 
 #ifdef WIN32
 #include "ServiceWin32.h"
@@ -57,7 +55,7 @@ INSTANTIATE_SINGLETON_1(Master);
 
 volatile uint32 Master::m_masterLoopCounter = 0;
 
-class FreezeDetectorRunnable : public ACE_Based::Runnable
+class FreezeDetectorRunnable : public MaNGOS::Runnable
 {
     public:
         FreezeDetectorRunnable() { _delaytime = 0; }
@@ -76,7 +74,7 @@ class FreezeDetectorRunnable : public ACE_Based::Runnable
             w_lastchange = 0;
             while (!World::IsStopped())
             {
-                ACE_Based::Thread::Sleep(1000);
+                MaNGOS::Thread::Sleep(1000);
 
                 uint32 curtime = WorldTimer::getMSTime();
                 // DEBUG_LOG("anti-freeze: time=%u, counters=[%u; %u]",curtime,Master::m_masterLoopCounter,World::m_worldLoopCounter);
@@ -98,7 +96,7 @@ class FreezeDetectorRunnable : public ACE_Based::Runnable
         }
 };
 
-class RARunnable : public ACE_Based::Runnable
+class RARunnable : public MaNGOS::Runnable
 {
     private:
         ACE_Reactor* m_Reactor;
@@ -212,10 +210,6 @@ int Master::Run()
     ///- Catch termination signals
     _HookSignals();
 
-    ///- Launch WorldRunnable thread
-    ACE_Based::Thread world_thread(new WorldRunnable);
-    world_thread.setPriority(ACE_Based::Highest);
-
     // set realmbuilds depend on mangosd expected builds, and set server online
     {
         std::string builds = AcceptableClientBuildsListStr();
@@ -223,7 +217,7 @@ int Master::Run()
         LoginDatabase.DirectPExecute("UPDATE realmlist SET realmflags = realmflags & ~(%u), population = 0, realmbuilds = '%s'  WHERE id = '%u'", REALM_FLAG_OFFLINE, builds.c_str(), realmID);
     }
 
-    ACE_Based::Thread* cliThread = NULL;
+    MaNGOS::Thread* cliThread = NULL;
 
 #ifdef WIN32
     if (sConfig.GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
@@ -232,13 +226,13 @@ int Master::Run()
 #endif
     {
         ///- Launch CliRunnable thread
-        cliThread = new ACE_Based::Thread(new CliRunnable);
+        cliThread = new MaNGOS::Thread(new CliRunnable);
     }
 
-    ACE_Based::Thread* rar_thread = NULL;
+    MaNGOS::Thread* rar_thread = NULL;
     if (sConfig.GetBoolDefault("Ra.Enable", false))
     {
-        rar_thread = new ACE_Based::Thread(new RARunnable);
+        rar_thread = new MaNGOS::Thread(new RARunnable);
     }
 
     ///- Handle affinity for multiple processors and process priority on Windows
@@ -273,7 +267,7 @@ int Master::Run()
 
         bool Prio = sConfig.GetBoolDefault("ProcessPriority", false);
 
-//        if(Prio && (m_ServiceStatus == -1)/* need set to default process priority class in service mode*/)
+        // if(Prio && (m_ServiceStatus == -1)/* need set to default process priority class in service mode*/)
         if (Prio)
         {
             if (SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS))
@@ -286,31 +280,31 @@ int Master::Run()
 #endif
 
     ///- Start soap serving thread
-    ACE_Based::Thread* soap_thread = NULL;
+    MaNGOS::Thread* soap_thread = NULL;
 
     if (sConfig.GetBoolDefault("SOAP.Enabled", false))
     {
         MaNGOSsoapRunnable* runnable = new MaNGOSsoapRunnable();
 
         runnable->setListenArguments(sConfig.GetStringDefault("SOAP.IP", "127.0.0.1"), sConfig.GetIntDefault("SOAP.Port", 7878));
-        soap_thread = new ACE_Based::Thread(runnable);
+        soap_thread = new MaNGOS::Thread(runnable);
     }
 
     ///- Start up freeze catcher thread
-    ACE_Based::Thread* freeze_thread = NULL;
+    MaNGOS::Thread* freeze_thread = NULL;
     if (uint32 freeze_delay = sConfig.GetIntDefault("MaxCoreStuckTime", 0))
     {
         FreezeDetectorRunnable* fdr = new FreezeDetectorRunnable();
         fdr->SetDelayTime(freeze_delay * 1000);
-        freeze_thread = new ACE_Based::Thread(fdr);
-        freeze_thread->setPriority(ACE_Based::Highest);
+        freeze_thread = new MaNGOS::Thread(fdr);
+        freeze_thread->setPriority(MaNGOS::Priority_Highest);
     }
 
     ///- Launch the world listener socket
     uint16 wsport = sWorld.getConfig(CONFIG_UINT32_PORT_WORLD);
     std::string bind_ip = sConfig.GetStringDefault("BindIP", "0.0.0.0");
 
-    if (sWorldSocketMgr->StartNetwork(wsport, bind_ip) == -1)
+    if (!sWorldSocketMgr.StartNetwork(wsport, bind_ip))
     {
         sLog.outError("Failed to start network");
         Log::WaitBeforeContinueIfNeed();
@@ -318,7 +312,54 @@ int Master::Run()
         // go down and shutdown the server
     }
 
-    sWorldSocketMgr->Wait();
+    ///- Init new SQL thread for the world database
+    WorldDatabase.ThreadStart();                            // let thread do safe mySQL requests (one connection call enough)
+    sWorld.InitResultQueue();
+
+    uint32 realCurrTime = 0;
+    uint32 realPrevTime = WorldTimer::tick();
+
+    uint32 prevSleepTime = 0;                               // used for balanced full tick time length near WORLD_SLEEP_CONST
+
+    ///- While we have not World::m_stopEvent, update the world
+    while (!World::IsStopped())
+    {
+        ++World::m_worldLoopCounter;
+        realCurrTime = WorldTimer::getMSTime();
+
+        uint32 diff = WorldTimer::tick();
+
+        sWorld.Update(diff);
+        realPrevTime = realCurrTime;
+
+        // diff (D0) include time of previous sleep (d0) + tick time (t0)
+        // we want that next d1 + t1 == WORLD_SLEEP_CONST
+        // we can't know next t1 and then can use (t0 + d1) == WORLD_SLEEP_CONST requirement
+        // d1 = WORLD_SLEEP_CONST - t0 = WORLD_SLEEP_CONST - (D0 - d0) = WORLD_SLEEP_CONST + d0 - D0
+        if (diff <= WORLD_SLEEP_CONST + prevSleepTime)
+        {
+            prevSleepTime = WORLD_SLEEP_CONST + prevSleepTime - diff;
+            MaNGOS::Thread::Sleep(prevSleepTime);
+        }
+        else
+            prevSleepTime = 0;
+
+        #ifdef WIN32
+        if (m_ServiceStatus == 0)
+            World::StopNow(SHUTDOWN_EXIT_CODE);
+        while (m_ServiceStatus == 2)
+            Sleep(1000);
+        #endif
+    }
+
+    sWorld.CleanupsBeforeStop();
+
+    sWorldSocketMgr.StopNetwork();
+
+    MapManager::Instance().UnloadAll();                     // unload all grids (including locked in memory)
+
+    ///- End the database thread
+    WorldDatabase.ThreadEnd();                              // free mySQL thread resources
 
     ///- Stop freeze protection before shutdown tasks
     if (freeze_thread)
@@ -340,10 +381,6 @@ int Master::Run()
 
     ///- Remove signal handling before leaving
     _UnhookSignals();
-
-    // when the main thread closes the singletons get unloaded
-    // since worldrunnable uses them, it will crash if unloaded after master
-    world_thread.wait();
 
     if (rar_thread)
     {

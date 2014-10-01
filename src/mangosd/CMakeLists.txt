@@ -24,12 +24,9 @@ set(EXECUTABLE_SRCS
     MaNGOSsoap.cpp
     MaNGOSsoap.h
     Main.cpp
-    Master.cpp
-    Master.h
-    RASocket.cpp
-    RASocket.h
-    WorldRunnable.cpp
-    WorldRunnable.h
+    FreezeDetector.h
+    RemoteAdministration.cpp
+    RemoteAdministration.h
     soapC.cpp
     soapH.h
     soapServer.cpp
@@ -74,6 +71,7 @@ target_link_libraries(${EXECUTABLE_NAME}
   framework
   g3dlite
   gsoap
+  ${Boost_LIBRARIES}
   ${ACE_LIBRARIES}
 )
 

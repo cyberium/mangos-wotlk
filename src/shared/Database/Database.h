@@ -22,10 +22,13 @@
 #include "Threading.h"
 #include "Utilities/UnorderedMapSet.h"
 #include "Database/SqlDelayThread.h"
-#include <ace/Recursive_Thread_Mutex.h>
 #include "Policies/ThreadingModel.h"
-#include <ace/TSS_T.h>
-#include <ace/Atomic_Op.h>
+
+#include <boost/atomic.hpp>
+#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/recursive_mutex.hpp>
+#include <boost/thread/tss.hpp>
+
 #include "SqlPreparedStatement.h"
 
 class SqlTransaction;
@@ -68,8 +71,8 @@ class MANGOS_DLL_SPEC SqlConnection
         class Lock
         {
             public:
-                Lock(SqlConnection* conn) : m_pConn(conn) { m_pConn->m_mutex.acquire(); }
-                ~Lock() { m_pConn->m_mutex.release(); }
+                Lock(SqlConnection* conn) : m_pConn(conn) { m_pConn->m_mutex.lock(); }
+                ~Lock() { m_pConn->m_mutex.unlock(); }
 
                 SqlConnection* operator->() const { return m_pConn; }
 
@@ -93,7 +96,7 @@ class MANGOS_DLL_SPEC SqlConnection
         void FreePreparedStatements();
 
     private:
-        typedef ACE_Recursive_Thread_Mutex LOCK_TYPE;
+        typedef boost::recursive_mutex LOCK_TYPE;
         LOCK_TYPE m_mutex;
 
         typedef std::vector<SqlPreparedStatement* > StmtHolder;
@@ -259,8 +262,7 @@ class MANGOS_DLL_SPEC Database
         };
 
         // per-thread based storage for SqlTransaction object initialization - no locking is required
-        typedef ACE_TSS<Database::TransHelper> DBTransHelperTSS;
-        Database::DBTransHelperTSS m_TransStorage;
+        boost::thread_specific_ptr<TransHelper> m_TransStorage;
 
         ///< DB connections
 
@@ -277,7 +279,7 @@ class MANGOS_DLL_SPEC Database
 
         // connection helper counters
         int m_nQueryConnPoolSize;                           // current size of query connection pool
-        ACE_Atomic_Op<ACE_Thread_Mutex, long> m_nQueryCounter;  // counter for connection selection
+        boost::atomic_long m_nQueryCounter;                 // counter for connection selection
 
         // lets use pool of connections for sync queries
         typedef std::vector< SqlConnection* > SqlConnectionContainer;
@@ -288,13 +290,13 @@ class MANGOS_DLL_SPEC Database
 
         SqlResultQueue*     m_pResultQueue;                 ///< Transaction queues from diff. threads
         SqlDelayThread*     m_threadBody;                   ///< Pointer to delay sql executer (owned by m_delayThread)
-        ACE_Based::Thread* m_delayThread;                   ///< Pointer to executer thread
+        MaNGOS::Thread* m_delayThread;                      ///< Pointer to executer thread
 
         bool m_bAllowAsyncTransactions;                     ///< flag which specifies if async transactions are enabled
 
         // PREPARED STATEMENT REGISTRY
-        typedef ACE_Thread_Mutex LOCK_TYPE;
-        typedef ACE_Guard<LOCK_TYPE> LOCK_GUARD;
+        typedef boost::mutex LOCK_TYPE;
+        typedef boost::lock_guard<LOCK_TYPE> LOCK_GUARD;
 
         mutable LOCK_TYPE m_stmtGuard;
 

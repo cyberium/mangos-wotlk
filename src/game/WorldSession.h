@@ -23,6 +23,9 @@
 #ifndef __WORLDSESSION_H
 #define __WORLDSESSION_H
 
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/mutex.hpp>
+
 #include "Common.h"
 #include "SharedDefines.h"
 #include "ObjectGuid.h"
@@ -229,7 +232,7 @@ class MANGOS_DLL_SPEC WorldSession
         friend class CharacterHandler;
 
     public:
-        WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale);
+        WorldSession(uint32 id, const boost::shared_ptr<WorldSocket>& sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -889,7 +892,7 @@ class MANGOS_DLL_SPEC WorldSession
 
         uint32 m_GUIDLow;                                   // set logged or recently logout player (while m_playerRecentlyLogout set)
         Player* _player;
-        WorldSocket* m_Socket;
+        boost::shared_ptr<WorldSocket> m_Socket;
         std::string m_Address;
 
         AccountTypes _security;
@@ -909,7 +912,7 @@ class MANGOS_DLL_SPEC WorldSession
         uint32 m_Tutorials[8];
         TutorialDataState m_tutorialState;
         AddonsList m_addonsList;
-        ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
+        MaNGOS::LockedQueue<WorldPacket*, boost::mutex> _recvQueue;
 };
 #endif
 /// @}

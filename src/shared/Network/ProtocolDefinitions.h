@@ -16,35 +16,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/// \addtogroup mangosd
-/// @{
-/// \file
+#ifndef PROTOCOL_DEFINITIONS_H
+#define PROTOCOL_DEFINITIONS_H
 
-#ifndef _MASTER_H
-#define _MASTER_H
+#include "Platform/Define.h"
+#include <boost/asio.hpp>
+#include <boost/shared_ptr.hpp>
 
-#include "Common.h"
-#include "Policies/Singleton.h"
-
-/// Start the server
-class Master
+namespace protocol
 {
-    public:
-        Master();
-        ~Master();
-        int Run();
-        static volatile uint32 m_masterLoopCounter;
+    typedef boost::asio::ip::tcp::acceptor Acceptor;
+    typedef boost::asio::ip::address IPAddress;
+    typedef boost::asio::ip::tcp::endpoint Endpoint;
+    typedef boost::asio::ip::tcp::socket Socket;
+    typedef boost::asio::io_service Service;
 
-    private:
-        bool _StartDB();
+    const uint32 READ_BUFFER_SIZE = 4096;
+    const uint32 SEND_BUFFER_SIZE = 65536;
+}
 
-        void _HookSignals();
-        void _UnhookSignals();
-        static void _OnSignal(int s);
+class Socket;
+typedef boost::shared_ptr<Socket> SocketPtr;
 
-        void clearOnlineAccounts();
-};
-
-#define sMaster MaNGOS::Singleton<Master>::Instance()
 #endif
-/// @}
