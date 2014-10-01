@@ -54,14 +54,6 @@
 
 #include "Platform/Define.h"
 
-#if COMPILER == COMPILER_MICROSOFT
-#  pragma warning(disable:4996)                             // 'function': was declared deprecated
-#ifndef __SHOW_STUPID_WARNINGS__
-#  pragma warning(disable:4244)                             // 'argument' : conversion from 'type1' to 'type2', possible loss of data
-#  pragma warning(disable:4355)                             // 'this' : used in base member initializer list
-#endif                                                      // __SHOW_STUPID_WARNINGS__
-#endif                                                      // __GNUC__
-
 #include "Utilities/UnorderedMapSet.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,20 +83,7 @@
 #include <boost/cstdint.hpp>
 #include <boost/thread/mutex.hpp>
 
-// Old ACE versions (pre-ACE-5.5.4) not have this type (add for allow use at Unix side external old ACE versions)
 #if PLATFORM != PLATFORM_WINDOWS
-#  ifndef ACE_OFF_T
-typedef off_t ACE_OFF_T;
-#  endif
-#endif
-
-#if PLATFORM == PLATFORM_WINDOWS
-#  if !defined (FD_SETSIZE)
-#    define FD_SETSIZE 4096
-#  endif
-#  include <ace/config-all.h>
-#  include <ws2tcpip.h>
-#else
 #  include <sys/types.h>
 #  include <sys/ioctl.h>
 #  include <sys/socket.h>

@@ -20,17 +20,19 @@
 #define MANGOS_DEFINE_H
 
 #include <sys/types.h>
+#include "Platform/CompilerDefs.h"
 
-#include <ace/Basic_Types.h>
-#include <ace/Default_Constants.h>
-#include <ace/OS_NS_dlfcn.h>
-#include <ace/ACE_export.h>
+#if PLATFORM == PLATFORM_WINDOWS
+#  define WIN32_LEAN_AND_MEAN
+#  include <Windows.h>
+#  if !defined (_WIN32_WINNT)
+#    define _WIN32_WINNT 0x0501
+#  endif
+#endif
 
 #include <boost/cstdint.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/detail/endian.hpp>
-
-#include "Platform/CompilerDefs.h"
 
 #define MANGOS_LITTLEENDIAN 0
 #define MANGOS_BIGENDIAN    1
@@ -45,16 +47,40 @@
 #  endif
 #endif // MANGOS_ENDIAN
 
-typedef ACE_SHLIB_HANDLE MANGOS_LIBRARY_HANDLE;
-
 #define MANGOS_SCRIPT_NAME "mangosscript"
-#define MANGOS_SCRIPT_SUFFIX ACE_DLL_SUFFIX
-#define MANGOS_SCRIPT_PREFIX ACE_DLL_PREFIX
-#define MANGOS_LOAD_LIBRARY(libname)    ACE_OS::dlopen(libname)
-#define MANGOS_CLOSE_LIBRARY(hlib)      ACE_OS::dlclose(hlib)
-#define MANGOS_GET_PROC_ADDR(hlib,name) ACE_OS::dlsym(hlib,name)
+#if PLATFORM == PLATFORM_WINDOWS
+   typedef HMODULE MANGOS_LIBRARY_HANDLE;
+#  define MANGOS_LOAD_LIBRARY(libname)     LoadLibraryA(libname)
+#  define MANGOS_CLOSE_LIBRARY(hlib)       FreeLibrary(hlib)
+#  define MANGOS_GET_PROC_ADDR(hlib, name) GetProcAddress(hlib, name)
+#  define MANGOS_SCRIPT_SUFFIX ".dll"
+#  define MANGOS_SCRIPT_PREFIX ""
+#  pragma comment(lib, "kernel32.lib")
+#else
+#  include <dlfcn.h>
+   typedef void* MANGOS_LIBRARY_HANDLE;
+#  define MANGOS_LOAD_LIBRARY(libname)     dlopen(libname, RTLD_LAZY)
+#  define MANGOS_CLOSE_LIBRARY(hlib)       dlclose(hlib)
+#  define MANGOS_GET_PROC_ADDR(hlib, name) dlsym(hlib, name)
+#  define MANGOS_SCRIPT_PREFIX "lib"
+#  if PLATFORM == PLATFORM_APPLE
+#    define MANGOS_SCRIPT_SUFFIX ".dylib"
+#  else
+#    define MANGOS_SCRIPT_SUFFIX ".so"
+#  endif // if platform apple
+#endif // if platform windows
 
-#define MANGOS_PATH_MAX PATH_MAX                            // ace/os_include/os_limits.h -> ace/Basic_Types.h
+// part of old ace lib.
+#if !defined (PATH_MAX)
+#  if defined (_MAX_PATH)
+#    define PATH_MAX _MAX_PATH
+#  elif defined (MAX_PATH)
+#    define PATH_MAX MAX_PATH
+#  else /* !_MAX_PATH */
+#    define PATH_MAX 1024
+#  endif /* _MAX_PATH */
+#endif /* !PATH_MAX */
+#define MANGOS_PATH_MAX PATH_MAX
 
 #if PLATFORM == PLATFORM_WINDOWS
 #  define MANGOS_EXPORT __declspec(dllexport)
