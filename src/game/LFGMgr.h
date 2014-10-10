@@ -182,12 +182,11 @@ class LFGMgr : public MaNGOS::Singleton<LFGMgr, MaNGOS::ClassLevelLockable<LFGMg
         // Proposal system
         uint32 CreateProposal(LFGDungeonEntry const* pDungeon, Group* pGroup = NULL, GuidSet* playerGuids = NULL);
         bool SendProposal(uint32 uiID, ObjectGuid guid);
+        void SendProposal(uint32 ID);
         LFGProposal* GetProposal(uint32 uiID);
-        void RemoveProposal(Player* pDecliner, uint32 uiID);
-        void RemoveProposal(uint32 uiID, bool bSuccess = false);
-        void UpdateProposal(uint32 uiID, ObjectGuid guid, bool bAccept);
+        void UpdateProposal(uint32 uiID, ObjectGuid guid, bool answer);
         void CleanupProposals(LFGType type);
-        Player* LeaderElection(GuidSet* playerGuids);
+        Player* LeaderElection(GuidSet const* playerGuids);
 
         // boot vote system
         void OfferContinue(Group* pGroup);
@@ -276,9 +275,10 @@ class LFGMgr : public MaNGOS::Singleton<LFGMgr, MaNGOS::ClassLevelLockable<LFGMg
 
     private:
         uint32 GenerateProposalID();
-        uint32          m_proposalID;
         uint32 GenerateQueueID();
+        bool UpdateOrRemoveProposal(LFGProposal* pProposal, bool expired = false);
         uint32          m_queueID;
+        uint32          m_proposalID;
 
         LFGRewardMap    m_RewardMap;                        // Stores rewards for random dungeons
         LFGQueueInfoMap m_queueInfoMap;                     // Storage for queues
@@ -294,6 +294,8 @@ class LFGMgr : public MaNGOS::Singleton<LFGMgr, MaNGOS::ClassLevelLockable<LFGMg
         IntervalTimer   m_LFGupdateTimer;                   // update timer for cleanup/statistic
         IntervalTimer   m_LFRupdateTimer;                   // update timer for LFR extend system
         IntervalTimer   m_LFGQueueUpdateTimer;              // update timer for statistic send
+
+        bool            m_findGroup;                        // set if player/group queue changed
 
 };
 

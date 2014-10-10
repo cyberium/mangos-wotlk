@@ -134,6 +134,9 @@ void WorldSession::SendPacket(WorldPacket const* packet)
 
 #ifdef MANGOS_DEBUG
 
+    if (packet->GetOpcode() != SMSG_MONSTER_MOVE)
+        sLog.outDebug("Opcodes sent: %s", packet->GetOpcodeName());
+
     // Code for network use statistic
     static uint64 sendPacketCount = 0;
     static uint64 sendPacketBytes = 0;

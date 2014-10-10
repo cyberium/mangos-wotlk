@@ -334,7 +334,6 @@ void DungeonPersistentState::UpdateEncounterState(EncounterCreditType type, uint
 					// Since adjacent grids often need loading, they can contain bosses from other instances and
 					// we have no way to identify which NPCs belong to which dungeon instances in those cases where
 					// the map Id is shared between several instances.
-					// TrinityCore seems to have reached the same conclusion.
 					if(dungeonId)
 						sLFGMgr.SendLFGRewards(player->GetGroup());
                 }

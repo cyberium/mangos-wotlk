@@ -216,7 +216,6 @@ class MANGOS_DLL_SPEC WorldSession
         void SendNotification(int32 string_id, ...);
         void SendPetNameInvalid(uint32 error, const std::string& name, DeclinedName* declinedName);
 		void SendLfgJoinResult(LFGJoinResult checkResult, uint8 checkValue = 0, bool withLockMap = false);
-        void SendLfgUpdate(bool isGroup, LfgUpdateType updateType, uint32 id);
 		void SendLfgUpdateParty(LFGUpdateType updateType, LFGType type);
         void SendLfgUpdatePlayer(LFGUpdateType updateType, LFGType type);
         void SendLfgUpdateSearch(bool update);

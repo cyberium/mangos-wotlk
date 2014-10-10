@@ -19632,20 +19632,24 @@ void Player::SetBattleGroundEntryPoint()
         else
             m_bgData.mountSpell = 0;
 
-        // If map is dungeon find linked graveyard
+        // If map is dungeon find its 'go out' position
         if (GetMap()->IsDungeon())
         {
-            if (const WorldSafeLocsEntry* entry = sObjectMgr.GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam()))
+            if (AreaTrigger const* at = sObjectMgr.GetGoBackTrigger(GetMapId()))
             {
-                m_bgData.joinPos = WorldLocation(entry->map_id, entry->x, entry->y, entry->z, 0.0f);
+                m_bgData.joinPos = WorldLocation(at->target_mapId, at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
                 m_bgData.m_needSave = true;
                 return;
             }
             else
-                sLog.outError("SetBattleGroundEntryPoint: Dungeon map %u has no linked graveyard, setting home location as entry point.", GetMapId());
+                sLog.outError("SetBattleGroundEntryPoint: Dungeon map %u has no go out position, setting home location as entry point.", GetMapId());
         }
-        // If new entry point is not BG or arena set it
-        else if (!GetMap()->IsBattleGroundOrArena())
+        // If player is in BG or arena the position is already saved
+        else if (GetMap()->IsBattleGroundOrArena())
+        {
+            return;
+        }
+        else
         {
             m_bgData.joinPos = WorldLocation(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
             m_bgData.m_needSave = true;
@@ -23112,7 +23116,7 @@ AreaLockStatus Player::GetAreaTriggerLockStatus(AreaTrigger const* at, Difficult
     if (!mapEntry)
         return AREA_LOCKSTATUS_UNKNOWN_ERROR;
 
-    bool isRegularTargetMap = !mapEntry->IsDungeon() || GetDifficulty(mapEntry->IsRaid()) == REGULAR_DIFFICULTY;
+    bool isRegularTargetMap = !mapEntry->IsDungeon() || difficulty == REGULAR_DIFFICULTY;
 
     MapDifficultyEntry const* mapDiff = GetMapDifficultyData(at->target_mapId, difficulty);
     if (mapEntry->IsDungeon() && !mapDiff)

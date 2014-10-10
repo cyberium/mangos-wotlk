@@ -226,9 +226,9 @@ typedef UNORDERED_MAP<LFGDungeonEntry const*, LFGLockStatusType> LFGLockStatusMa
 /// Stores group data related to proposal to join
 struct LFGProposal
 {
-    LFGProposal(LFGDungeonEntry const* _dungeon);
-    public:
-    uint32 m_uiID;                                               // Proposal id
+public:
+    LFGProposal(LFGDungeonEntry const* _dungeon, uint32 uid);
+
 
     // helpers
     Group* GetGroup();
@@ -236,34 +236,34 @@ struct LFGProposal
     void AddMember(ObjectGuid guid);
     void RemoveMember(ObjectGuid guid);
     bool IsMember(ObjectGuid guid);
-    GuidSet const GetMembers();
+    void SetAnswer(ObjectGuid const& guid, LFGAnswer answer);
+    LFGAnswer GetAnswer(ObjectGuid const& guid);
 
-    void RemoveDecliner(ObjectGuid guid);
-    bool IsDecliner(ObjectGuid guid);
-
-    LFGProposalState GetState() {return m_state;};
-    void SetState(LFGProposalState _state ) { m_state = _state;}
-
-    LFGDungeonEntry const* GetDungeon() { return m_dungeon;}
     LFGType GetType();
-
     uint32 GetDungeonId();
 
     void Start();
 
-    void SetDeleted() { m_bDeleted = true; };
-    bool const IsDeleted() const { return m_bDeleted; };
+    inline void SetDeleted() { m_bDeleted = true; }
+    inline bool const IsDeleted() const { return m_bDeleted; }
+    inline bool IsExpired() { return ( m_cancelTime > 0 && m_cancelTime < time_t(time(NULL))); }
+    inline LFGProposalState GetState() {return m_state;};
+    inline void SetState(LFGProposalState _state ) { m_state = _state;}
+    inline uint32 GetId() { return m_uiID; }
+    inline LFGDungeonEntry const* GetDungeon() { return m_dungeon; }
+    inline GuidSet const* LFGProposal::GetMembers() { return &playerGuids; }
 
-    bool IsExpired() { return ( m_cancelTime > 0 && m_cancelTime < time_t(time(NULL)));};
-
-    private:
-    LFGDungeonEntry const* m_dungeon;                    // Dungeon
-    LFGProposalState m_state;                            // State of the proposal
-    ObjectGuid m_groupGuid;                              // Proposal group (empty if not created)
-    time_t m_cancelTime;                                 // Time when we will cancel this proposal
-    GuidSet playerGuids;                                 // Players in this proposal
-    GuidSet declinerGuids;                               // Decliners in this proposal
-    bool m_bDeleted;                                     // avoid double-deleting proposal
+private:
+    typedef UNORDERED_MAP<ObjectGuid, LFGAnswer> AnswerMap;
+    LFGDungeonEntry const*  m_dungeon;          // Dungeon
+    LFGProposalState        m_state;            // State of the proposal
+    ObjectGuid              m_groupGuid;        // Proposal group (empty if not created)
+    time_t                  m_cancelTime;       // Time when we will cancel this proposal
+    GuidSet                 playerGuids;        // Players in this proposal
+    GuidSet                 declinerGuids;      // Decliners in this proposal
+    bool                    m_bDeleted;         // avoid double-deleting proposal
+    uint32                  m_uiID;             // Proposal id
+    AnswerMap               m_answerMap;        // keep track of who answered
 };
 
 
@@ -287,8 +287,8 @@ public:
 
     ObjectGuid const& GetOwnerGuid() { return m_guid; };
 
-    LFGProposal*   GetProposal()   { return m_proposal; };
-    void           SetProposal(LFGProposal* proposal)   { m_proposal = proposal; };
+    uint32   GetProposalId()   { return m_proposalID; };
+    void           SetProposalId(uint32 proposalID)   { m_proposalID = proposalID; };
 
     uint32         GetFlags()                { return m_uiFlags;};
     void           AddFlags(uint32 flags)    { m_uiFlags = m_uiFlags | flags;};
@@ -296,14 +296,14 @@ public:
 
 protected:
     LFGStateStructure(ObjectGuid const& guid)
-        : m_guid(guid), m_type(LFG_TYPE_NONE), m_uiFlags(0), m_bUpdate(false), m_state(LFG_STATE_NONE), m_proposal(NULL) {};
+        : m_guid(guid), m_type(LFG_TYPE_NONE), m_uiFlags(0), m_bUpdate(false), m_state(LFG_STATE_NONE), m_proposalID(0) {};
     LFGType          m_type;
     uint32           m_uiFlags;
     bool             m_bUpdate;
     LFGState         m_state;
     LFGDungeonSet    m_DungeonsList;                   // Dungeons the player have applied for
     LFGLockStatusMap m_LockMap;                        // Dungeons lock map
-    LFGProposal*     m_proposal;
+    uint32           m_proposalID;
     ObjectGuid const m_guid;                           // guid of object
 
 };
@@ -336,16 +336,11 @@ public:
     void           SetTeleported() {m_bTeleported = true;};
     bool           IsTeleported() { return m_bTeleported;};
 
-    void           SetAnswer(LFGAnswer _accept) { m_answer = _accept;};
-    LFGAnswer      GetAnswer() { return m_answer;};
-
 private:
     LFGRoleMask    m_rolesMask;
     bool           m_bTeleported;
     time_t         m_jointime;
     std::string    m_comment;
-    LFGAnswer      m_answer;                           ///< Accept status (-1 not answer | 0 Not agree | 1 agree)
-
 };
 
 typedef UNORDERED_MAP<ObjectGuid, LFGAnswer> LFGAnswerMap;

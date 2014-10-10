@@ -77,8 +77,7 @@ void LFGPlayerState::Clear()
     m_DungeonsList.clear();
     m_LockMap.clear();
     m_comment.clear();
-    m_answer = LFG_ANSWER_PENDING;
-    m_proposal = NULL;
+    m_proposalID = 0;
     SetState(LFG_STATE_NONE);
     m_bTeleported = false;
 }
@@ -152,7 +151,7 @@ void LFGGroupState::Clear()
     m_uiVotesNeeded = 3;
     m_uiKicksLeft = sWorld.getConfig(CONFIG_UINT32_LFG_MAXKICKS);
     m_uiFlags = LFG_MEMBER_FLAG_NONE | LFG_MEMBER_FLAG_COMMENT | LFG_MEMBER_FLAG_ROLES | LFG_MEMBER_FLAG_BIND;
-    m_proposal = NULL;
+    m_proposalID = 0;
     m_roleCheckCancelTime = 0;
     m_roleCheckState      = LFG_ROLECHECK_NONE;
     m_type = LFG_TYPE_NONE;
@@ -301,8 +300,8 @@ LFGQueueInfo::LFGQueueInfo(ObjectGuid _guid, LFGType type, uint32 _queueID)
     joinTime = time_t(time(NULL));
 }
 
-LFGProposal::LFGProposal(LFGDungeonEntry const* _dungeon)
-    : m_dungeon(_dungeon), m_state(LFG_PROPOSAL_INITIATING), m_cancelTime(0)
+LFGProposal::LFGProposal(LFGDungeonEntry const* _dungeon, uint32 uid)
+    : m_dungeon(_dungeon), m_uiID(uid), m_state(LFG_PROPOSAL_INITIATING), m_cancelTime(0)
 {
     declinerGuids.clear();
     playerGuids.clear();
@@ -314,16 +313,6 @@ void LFGProposal::Start()
     m_cancelTime = time_t(time(NULL) + LFG_TIME_PROPOSAL);
 }
 
-void LFGProposal::RemoveDecliner(ObjectGuid guid)
-{
-    if (guid.IsEmpty())
-        return;
-
-    RemoveMember(guid);
-
-    declinerGuids.insert(guid);
-}
-
 void LFGProposal::RemoveMember(ObjectGuid guid)
 {
     if (guid.IsEmpty())
@@ -332,6 +321,10 @@ void LFGProposal::RemoveMember(ObjectGuid guid)
     GuidSet::iterator itr = playerGuids.find(guid);
     if (itr != playerGuids.end())
         playerGuids.erase(itr);
+
+    AnswerMap::iterator itr2 = m_answerMap.find(guid);
+    if (itr2 != m_answerMap.end())
+        m_answerMap.erase(itr2);
 }
 
 void LFGProposal::AddMember(ObjectGuid guid)
@@ -346,24 +339,6 @@ bool LFGProposal::IsMember(ObjectGuid guid)
         return false;
     else
         return true;
-}
-
-GuidSet const LFGProposal::GetMembers()
-{
-    GuidSet tmpGuids = playerGuids;
-    return tmpGuids;
-}
-
-bool LFGProposal::IsDecliner(ObjectGuid guid)
-{
-    if (declinerGuids.empty())
-        return false;
-
-    GuidSet::iterator itr = declinerGuids.find(guid);
-    if (itr != declinerGuids.end())
-        return true;
-
-    return false;
 }
 
 LFGType LFGProposal::GetType()
@@ -393,3 +368,27 @@ uint32 LFGProposal::GetDungeonId()
 {
     return GetDungeon() ? GetDungeon()->ID : 0;
 };
+
+void LFGProposal::SetAnswer(ObjectGuid const& guid, LFGAnswer answer)
+{
+    m_answerMap.insert(std::make_pair(guid, answer));
+
+    uint32 size = playerGuids.size();
+    if (Group* grp = GetGroup())
+        size += grp->GetMembersCount();
+
+    if (answer == LFG_ANSWER_DENY)
+        SetState(LFG_PROPOSAL_FAILED);
+
+    if (m_answerMap.size() == size && GetState() == LFG_PROPOSAL_INITIATING)
+         SetState(LFG_PROPOSAL_SUCCESS);
+}
+
+LFGAnswer LFGProposal::GetAnswer(ObjectGuid const& guid)
+{
+    AnswerMap::const_iterator itr = m_answerMap.find(guid);
+    if (itr != m_answerMap.end())
+        return itr->second;
+    else
+        return LFG_ANSWER_PENDING;
+}

@@ -144,7 +144,7 @@ bool Group::Create(ObjectGuid guid, const char* name)
     {
         m_Id = sObjectMgr.GenerateGroupLowGuid();
 
-		sObjectMgr.AddGroup(this);
+        sObjectMgr.AddGroup(this);
 
         Player* leader = sObjectMgr.GetPlayer(guid);
         if (leader)
@@ -233,12 +233,12 @@ bool Group::LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant, LFG
 
     member.group     = subgroup;
     member.assistant = assistant;
-	member.roles	 = roles;
+    member.roles	 = roles;
     m_memberSlots.push_back(member);
 
     SubGroupCounterIncrease(subgroup);
 
-	Player* player = sObjectMgr.GetPlayer(member.guid);
+    Player* player = sObjectMgr.GetPlayer(member.guid);
     if (player)
     {
         if (player->IsInWorld())
@@ -434,7 +434,7 @@ void Group::ChangeLeader(ObjectGuid guid)
     if (slot == m_memberSlots.end())
         return;
 
-	sLFGMgr.Leave(this);
+    sLFGMgr.Leave(this);
 
     _setLeader(guid);
 
@@ -1217,7 +1217,7 @@ bool Group::_addMember(ObjectGuid guid, const char* name, bool isAssistant, uint
     member.name      = name;
     member.group     = group;
     member.assistant = isAssistant;
-	member.roles	 = roles;
+    member.roles	 = roles;
     member.lastMap   = lastMap;
     m_memberSlots.push_back(member);
 
@@ -2042,7 +2042,7 @@ bool Group::ConvertToLFG(LFGType type)
     {
         static SqlStatementID updGroup;
         CharacterDatabase.PExecute("UPDATE groups SET groupType = '%u' WHERE groupId = '%u'",
-                                   uint8(m_groupType), GetObjectGuid().GetCounter());
+                                    uint8(m_groupType), GetObjectGuid().GetCounter());
 
     }
     return true;
@@ -2059,8 +2059,8 @@ void Group::SetGroupRoles(ObjectGuid guid, LFGRoleMask roles)
             if (IsNeedSave())
             {
                 static SqlStatementID updGroupMember;
-				CharacterDatabase.PExecute("UPDATE group_member SET roles = '%u' WHERE memberGuid = '%u'",
-										   uint8(itr->roles), itr->guid.GetCounter());
+                CharacterDatabase.PExecute("UPDATE group_member SET roles = '%u' WHERE memberGuid = '%u'",
+                                            uint8(itr->roles), itr->guid.GetCounter());
             }
 
             SendUpdate();
