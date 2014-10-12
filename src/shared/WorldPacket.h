@@ -16,35 +16,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef WORLD_PACKET_H
-#define WORLD_PACKET_H
+#ifndef MANGOSSERVER_WORLDPACKET_H
+#define MANGOSSERVER_WORLDPACKET_H
 
 #include "Common.h"
 #include "ByteBuffer.h"
 #include "Opcodes.h"
 
-// Note: opcode_ and size stored in platfom dependent format
-// Ignore endianess until send, and converted at receive
+// Note: m_opcode and size stored in platfom dependent format
+// ignore endianess until send, and converted at receive
 class WorldPacket : public ByteBuffer
 {
 public:
-    WorldPacket() : ByteBuffer(0), opcode_(MSG_NULL_ACTION) { }
-    explicit WorldPacket(Opcodes opcode, size_t res = 200) : ByteBuffer(res), opcode_(opcode) { }
-    WorldPacket(const WorldPacket& packet) : ByteBuffer(packet), opcode_(packet.opcode_) { }
+    // just container for later use
+    WorldPacket() : ByteBuffer(0), m_opcode(MSG_NULL_ACTION) {}
+    explicit WorldPacket(Opcodes opcode, size_t res = 200) : ByteBuffer(res), m_opcode(opcode) {}
+    // copy constructor
+    WorldPacket(const WorldPacket& packet) : ByteBuffer(packet), m_opcode(packet.m_opcode) {}
 
     void Initialize(Opcodes opcode, size_t newres = 200)
     {
         clear();
         _storage.reserve(newres);
-        opcode_ = opcode;
+        m_opcode = opcode;
     }
 
-    Opcodes GetOpcode() const { return opcode_; }
-    void SetOpcode(Opcodes opcode) { opcode_ = opcode; }
-    inline const char* GetOpcodeName() const { return LookupOpcodeName(opcode_); }
+    Opcodes GetOpcode() const { return m_opcode; }
+    void SetOpcode(Opcodes opcode) { m_opcode = opcode; }
+    inline const char* GetOpcodeName() const { return LookupOpcodeName(m_opcode); }
 
 protected:
-    Opcodes opcode_;
+    Opcodes m_opcode;
 };
-
-#endif // WORLD_PACKET_H
+#endif

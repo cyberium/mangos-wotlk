@@ -67,6 +67,10 @@ bool Socket::Open()
 
     StartAsyncRead();
 
+    std::stringstream ss;
+    ss << boost::this_thread::get_id();
+    DEBUG_LOG("New connection opened from ip(%s), from thread(%s)", m_address.c_str(), ss.str().c_str());
+
     return true;
 }
 
@@ -89,6 +93,9 @@ void Socket::Close()
     {
         sLog.outError("Socket::close: error occurred while closing socket = %s", e.message().c_str());
     }
+    std::stringstream ss;
+    ss << boost::this_thread::get_id();
+    DEBUG_LOG("Closed connection from ip(%s), from thread(%s)", m_address.c_str(), ss.str().c_str());
 }
 
 bool Socket::EnableTCPNoDelay(bool enable)
@@ -166,12 +173,12 @@ void Socket::OnWriteComplete(const boost::system::error_code& error, size_t byte
     m_outBuffer->Consume(bytes_transferred);
     m_outBuffer->Prepare();
 
-    StartAsyncSend();
+    StartAsyncRead();
 }
 
 void Socket::StartAsyncRead()
 {
-    if (IsClosed())
+    if(IsClosed())
         return;
 
     m_readBuffer->Prepare();

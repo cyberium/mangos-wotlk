@@ -29,70 +29,6 @@
 #include "Network/Socket.h"
 #include "Utilities/ByteConverter.h"
 
-#if defined( __GNUC__ )
-#pragma pack(1)
-#else
-#pragma pack(push,1)
-#endif
-
-struct ServerPktHeader
-{
-    /**
-    * size is the length of the payload _plus_ the length of the opcode
-    */
-    ServerPktHeader(uint32 size, uint16 cmd) : size(size)
-    {
-        uint8 headerIndex = 0;
-        if (isLargePacket())
-        {
-            DEBUG_LOG("initializing large server to client packet. Size: %u, cmd: %u", size, cmd);
-            header[headerIndex++] = 0x80 | (0xFF & (size >> 16));
-        }
-        header[headerIndex++] = 0xFF & (size >> 8);
-        header[headerIndex++] = 0xFF & size;
-
-        header[headerIndex++] = 0xFF & cmd;
-        header[headerIndex++] = 0xFF & (cmd >> 8);
-    }
-
-    uint8 getHeaderLength()
-    {
-        // cmd = 2 bytes, size= 2||3bytes
-        return 2 + (isLargePacket() ? 3 : 2);
-    }
-
-    bool isLargePacket()
-    {
-        return size > 0x7FFF;
-    }
-
-    const uint32 size;
-    uint8 header[5];
-};
-
-struct ClientPktHeader
-{
-    bool IsValid() const
-    {
-        return (size >= 4) && (size <= 10240) && (cmd <= 10240);
-    }
-
-    void Convert()
-    {
-        EndianConvertReverse(size);
-        EndianConvert(cmd);
-    }
-
-    uint16 size;
-    uint32 cmd;
-};
-
-#if defined( __GNUC__ )
-#pragma pack()
-#else
-#pragma pack(pop)
-#endif
-
 class WorldPacket;
 class WorldSession;
 class NetworkThread;
@@ -103,7 +39,7 @@ class WorldSocketMgr;
  *
  * This class is responsible for the communication with
  * remote clients.
- * Most methods return false on failure.
+ * Most methods return -1 on failure.
  * The class uses reference counting.
  *
  * For output the class uses one buffer (64K usually) and
@@ -134,56 +70,72 @@ class WorldSocketMgr;
  * notification.
  *
  */
-
 class WorldSocket : public Socket
 {
 public:
-    const static int CLIENT_PACKET_HEADER_SIZE = sizeof(ClientPktHeader);
+    /// Close the socket.
+    virtual void CloseSocket(void) override;
+
+    /// Send A packet on the socket, this function is reentrant.
+    /// @param pct packet to send
+    /// @return false of failure
+    bool SendPacket(const WorldPacket& pct);
+
+    /// Return the session key
+    BigNumber& GetSessionKey() { return m_s; }
 
     WorldSocket(NetworkManager& manager, NetworkThread& owner);
-    virtual ~WorldSocket(void);
 
-    virtual void CloseSocket(void) override;
-    bool SendPacket(const WorldPacket& pct);
-    BigNumber& GetSessionKey() { return m_sessionKey; }
+    virtual ~WorldSocket(void);
 
 protected:
     virtual bool Open() override;
     virtual bool ProcessIncomingData() override;
 
 private:
-    bool ReadPacketHeader();
-    bool ValidatePacketHeader();
-    bool ReadPacketContent();
+    /// Helper functions for processing incoming data.
+    int handle_input_header(void);
+    int handle_input_payload(void);
 
-    bool ProcessPacket(WorldPacket* new_pct);
+    /// process one incoming packet.
+    /// @param new_pct received packet ,note that you need to delete it.
+    int ProcessIncoming(WorldPacket* new_pct);
 
-    bool HandleAuthSession(WorldPacket& recvPacket);
-    bool HandlePing(WorldPacket& recvPacket);
+    /// Called by ProcessIncoming() on CMSG_AUTH_SESSION.
+    int HandleAuthSession(WorldPacket& recvPacket);
 
-    bool received_header_;
+    /// Called by ProcessIncoming() on CMSG_PING.
+    int HandlePing(WorldPacket& recvPacket);
 
-    // Client packet
-    ClientPktHeader m_header;
-    WorldPacket* m_packet;
-
-    // Used for de-/encrypting packet headers
-    AuthCrypt m_crypt;
-
-    uint32 m_seed;
-    BigNumber m_sessionKey;
-
-    // Session to which received packets are routed
-    WorldSession* m_session;
-
-    // Mutex lock to protect session_
-    LockType m_sessionLock;
-
-    // Time in which the last ping was received
+    /// Time in which the last ping was received
     std::chrono::system_clock::time_point m_LastPingTime;
 
-    // Keep track of over-speed pings ,to prevent ping flood.
+    /// Keep track of over-speed pings ,to prevent ping flood.
     uint32 m_OverSpeedPings;
+
+    /// Class used for managing encryption of the headers
+    AuthCrypt m_Crypt;
+
+    /// Mutex lock to protect m_Session
+    LockType m_SessionLock;
+
+    /// Session to which received packets are routed
+    WorldSession* m_Session;
+
+    /// here are stored the fragments of the received data
+    WorldPacket* m_RecvWPct;
+
+    /// This block actually refers to m_RecvWPct contents,
+    /// which allows easy and safe writing to it.
+    /// It wont free memory when its deleted. m_RecvWPct takes care of freeing.
+    NetworkBuffer m_RecvPct;
+
+    /// Fragment of the received header.
+    NetworkBuffer m_Header;
+
+    uint32 m_Seed;
+
+    BigNumber m_s;
 };
 
 typedef boost::shared_ptr<WorldSocket> WorldSocketPtr;
