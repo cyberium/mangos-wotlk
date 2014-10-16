@@ -69,16 +69,12 @@ bool NetworkManager::StartNetwork(boost::uint16_t port, std::string address)
 
     std::string threadName = "\"" + m_managerName + "\" Acceptor";
     m_networkThreads[0].SetName(threadName);
-    threadName = "\"" + m_managerName + "\" Service";
-    for (size_t i = 0; i < m_networkThreadsCount; ++i)
+    m_networkThreads[0].Start();
+    threadName = "\"" + m_managerName + "\" Service n";
+    for (size_t i = 1; i < m_networkThreadsCount; ++i)
     {
         // set thread name
-        if (i > 0)
-        {
-            std::string tname = threadName;
-            m_networkThreads[i].SetName(threadName);
-        }
-
+        m_networkThreads[i].SetName(threadName + std::to_string(i));
         m_networkThreads[i].Start();
     }
 
