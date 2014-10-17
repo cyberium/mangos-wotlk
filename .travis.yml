@@ -25,7 +25,7 @@ git:
 # only run travis on the master branch
 branches:
   only:
-    - boost1
+    - boostclean
 
 compiler:
   - gcc
