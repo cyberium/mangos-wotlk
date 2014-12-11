@@ -55,6 +55,7 @@ Object::Object()
 
     m_inWorld           = false;
     m_objectUpdated     = false;
+    loot              = NULL;
 }
 
 Object::~Object()
@@ -73,6 +74,8 @@ Object::~Object()
     }
 
     delete[] m_uint32Values;
+
+    delete loot;
 }
 
 void Object::_InitValues()
@@ -525,15 +528,26 @@ void Object::BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* u
                 // hide lootable animation for unallowed players
                 else if (index == UNIT_DYNAMIC_FLAGS && GetTypeId() == TYPEID_UNIT)
                 {
-                    if (!target->isAllowedToLoot((Creature*)this))
-                        *data << (m_uint32Values[index] & ~(UNIT_DYNFLAG_LOOTABLE | UNIT_DYNFLAG_TAPPED_BY_PLAYER));
+                    Creature* creature = (Creature*)this;
+                    if (creature->loot && creature->loot->CanLoot(target->GetObjectGuid()))
+                    {
+                        *data << (m_uint32Values[index] | (UNIT_DYNFLAG_LOOTABLE | UNIT_DYNFLAG_TAPPED | UNIT_DYNFLAG_TAPPED_BY_PLAYER));
+                        //sLog.outString(">> %s is lootable for %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
+                    }
                     else
                     {
-                        // flag only for original loot recipent
-                        if (target->GetObjectGuid() == ((Creature*)this)->GetLootRecipientGuid())
-                            *data << m_uint32Values[index];
+                        uint32 value = (m_uint32Values[index] & ~(UNIT_DYNFLAG_LOOTABLE));
+                        //sLog.outString(">> %s is not lootable for %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
+                        if (creature->IsTappedBy(target))
+                        {
+                            *data << (value | UNIT_DYNFLAG_TAPPED_BY_PLAYER);
+                            //sLog.outString(">> %s is tapped by %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
+                        }
                         else
-                            *data << (m_uint32Values[index] & ~(UNIT_DYNFLAG_TAPPED | UNIT_DYNFLAG_TAPPED_BY_PLAYER));
+                        {
+                            *data << (value & ~(UNIT_DYNFLAG_TAPPED_BY_PLAYER));
+                            //sLog.outString(">> %s is not tapped by %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
+                        }
                     }
                 }
                 else
@@ -933,6 +947,16 @@ void Object::MarkForClientUpdate()
             AddToClientUpdateList();
             m_objectUpdated = true;
         }
+    }
+}
+
+void Object::ForceValuesUpdateAtIndex(uint32 index)
+{
+    m_changedValues[index] = true;
+    if (m_inWorld && !m_objectUpdated)
+    {
+        AddToClientUpdateList();
+        m_objectUpdated = true;
     }
 }
 
