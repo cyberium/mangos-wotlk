@@ -58,6 +58,7 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "Vehicle.h"
+#include "LootMgr.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS] =
 {
@@ -4820,7 +4821,8 @@ void Spell::EffectCreateItem2(SpellEffectIndex eff_idx)
         }
 
         // create some random items
-        player->AutoStoreLoot(NULL, m_spellInfo->Id, LootTemplates_Spell);
+        Loot loot(player, m_spellInfo->Id, LOOT_SPELL);
+        loot.AutoStore(player);
     }
 }
 
@@ -4831,7 +4833,8 @@ void Spell::EffectCreateRandomItem(SpellEffectIndex /*eff_idx*/)
     Player* player = (Player*)m_caster;
 
     // create some random items
-    player->AutoStoreLoot(NULL, m_spellInfo->Id, LootTemplates_Spell);
+    Loot loot(player, m_spellInfo->Id, LOOT_SPELL);
+    loot.AutoStore(player);
 }
 
 void Spell::EffectPersistentAA(SpellEffectIndex eff_idx)
