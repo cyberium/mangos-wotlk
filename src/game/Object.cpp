@@ -530,7 +530,7 @@ void Object::BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* u
                 else if (index == UNIT_DYNAMIC_FLAGS && GetTypeId() == TYPEID_UNIT)
                 {
                     Creature* creature = (Creature*)this;
-                    if (creature->loot && creature->loot->CanLoot(target->GetObjectGuid()))
+                    if (creature->loot && creature->loot->CanLoot(target))
                     {
                         *data << (m_uint32Values[index] | (UNIT_DYNFLAG_LOOTABLE | UNIT_DYNFLAG_TAPPED | UNIT_DYNFLAG_TAPPED_BY_PLAYER));
                         //sLog.outString(">> %s is lootable for %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
