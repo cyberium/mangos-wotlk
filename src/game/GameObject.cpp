@@ -2351,3 +2351,12 @@ void GameObject::ForceGameObjectHealth(int32 diff, Unit* caster)
     // Set health
     SetGoAnimProgress(GetMaxHealth() ? m_useTimes * 255 / GetMaxHealth() : 255);
 }
+
+void GameObject::SetInUse(bool use)
+{
+    m_isInUse = use;
+    if (use)
+        SetGoState(GO_STATE_ACTIVE);
+    else
+        SetGoState(GO_STATE_READY);
+}
