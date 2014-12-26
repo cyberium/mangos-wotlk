@@ -530,25 +530,43 @@ void Object::BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* u
                 else if (index == UNIT_DYNAMIC_FLAGS && GetTypeId() == TYPEID_UNIT)
                 {
                     Creature* creature = (Creature*)this;
-                    if (creature->loot && creature->loot->CanLoot(target))
+                    if (creature->isAlive())
                     {
+                        // creature is alive so, not lootable
+                        uint32 value = (m_uint32Values[index] & ~(UNIT_DYNFLAG_LOOTABLE));
+                        if (creature->isInCombat())
+                        {
+                            if (creature->IsTappedBy(target))
+                            {
+                                // creature is in combat and tapped by this player
+                                *data << (value & ~(UNIT_DYNFLAG_TAPPED) | UNIT_DYNFLAG_TAPPED_BY_PLAYER);
+                                //sLog.outString(">> %s is tapped by %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
+                            }
+                            else
+                            {
+                                // creature is in combat but not tapped by this player
+                                *data << (value & ~(UNIT_DYNFLAG_TAPPED_BY_PLAYER) | UNIT_DYNFLAG_TAPPED);
+                                //sLog.outString(">> %s is not tapped by %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
+                            }
+                        }
+                        else
+                        {
+                            // creature is not in combat so its not tapped
+                            *data << (value & ~(UNIT_DYNFLAG_TAPPED) | UNIT_DYNFLAG_TAPPED_BY_PLAYER);
+                            //sLog.outString(">> %s is not in combat so not tapped by %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
+                        }
+                    }
+                    else if (creature->loot && creature->loot->CanLoot(target))
+                    {
+                        // creature is dead and this player can loot it
                         *data << (m_uint32Values[index] | (UNIT_DYNFLAG_LOOTABLE | UNIT_DYNFLAG_TAPPED | UNIT_DYNFLAG_TAPPED_BY_PLAYER));
                         //sLog.outString(">> %s is lootable for %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
                     }
                     else
                     {
-                        uint32 value = (m_uint32Values[index] & ~(UNIT_DYNFLAG_LOOTABLE));
+                        // creature is dead but this player cannot loot it
+                        *data << (m_uint32Values[index] & ~(UNIT_DYNFLAG_TAPPED_BY_PLAYER | UNIT_DYNFLAG_LOOTABLE) | UNIT_DYNFLAG_TAPPED);
                         //sLog.outString(">> %s is not lootable for %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
-                        if (creature->IsTappedBy(target))
-                        {
-                            *data << (value | UNIT_DYNFLAG_TAPPED_BY_PLAYER);
-                            //sLog.outString(">> %s is tapped by %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
-                        }
-                        else
-                        {
-                            *data << (value & ~(UNIT_DYNFLAG_TAPPED_BY_PLAYER));
-                            //sLog.outString(">> %s is not tapped by %s", this->GetObjectGuid().GetString().c_str(), target->GetObjectGuid().GetString().c_str());
-                        }
                     }
                 }
                 else
