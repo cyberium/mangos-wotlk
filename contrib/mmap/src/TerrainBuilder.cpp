@@ -113,8 +113,10 @@ namespace MMAP
         // data used later
         uint16 holes[16][16];
         memset(holes, 0, sizeof(holes));
-        uint8 liquid_type[16][16];
-        memset(liquid_type, 0, sizeof(liquid_type));
+        uint16 liquidEntry[16][16];
+        uint8 liquidFlags[16][16];
+        memset(liquidEntry, 0, sizeof(liquidEntry));
+        memset(liquidFlags, 0, sizeof(liquidFlags));
         G3D::Array<int> ltriangles;
         G3D::Array<int> ttriangles;
 
@@ -160,7 +162,6 @@ namespace MMAP
             }
 
             // hole data
-            memset(holes, 0, fheader.holesSize);
             fseek(mapFile, fheader.holesOffset, SEEK_SET);
             fread(holes, fheader.holesSize, 1, mapFile);
 
@@ -208,73 +209,73 @@ namespace MMAP
             float* liquid_map = NULL;
 
             if (!(lheader.flags & MAP_LIQUID_NO_TYPE))
-                fread(liquid_type, sizeof(liquid_type), 1, mapFile);
+            {
+                fread(liquidEntry, sizeof(liquidEntry), 1, mapFile);
+                fread(liquidFlags, sizeof(liquidFlags), 1, mapFile);
+            }
 
+            // Totally disable the triangle liquid generation here
             if (!(lheader.flags & MAP_LIQUID_NO_HEIGHT))
             {
-                liquid_map = new float [lheader.width * lheader.height];
+                liquid_map = new float[lheader.width * lheader.height];
                 fread(liquid_map, sizeof(float), lheader.width * lheader.height, mapFile);
             }
 
-            if (liquid_type && liquid_map)
+            int count = meshData.liquidVerts.size() / 3;
+            float xoffset = (float(tileX) - 32) * GRID_SIZE;
+            float yoffset = (float(tileY) - 32) * GRID_SIZE;
+
+            float coord[3];
+            int row, col;
+
+            // generate coordinates
+            if (liquid_map)
             {
-                int count = meshData.liquidVerts.size() / 3;
-                float xoffset = (float(tileX) - 32) * GRID_SIZE;
-                float yoffset = (float(tileY) - 32) * GRID_SIZE;
-
-                float coord[3];
-                int row, col;
-
-                // generate coordinates
-                if (!(lheader.flags & MAP_LIQUID_NO_HEIGHT))
+                int j = 0;
+                for (int i = 0; i < V9_SIZE_SQ; ++i)
                 {
-                    int j = 0;
-                    for (int i = 0; i < V9_SIZE_SQ; ++i)
+                    row = i / V9_SIZE;
+                    col = i % V9_SIZE;
+
+                    if (row < lheader.offsetY || row >= lheader.offsetY + lheader.height ||
+                        col < lheader.offsetX || col >= lheader.offsetX + lheader.width)
                     {
-                        row = i / V9_SIZE;
-                        col = i % V9_SIZE;
-
-                        if (row < lheader.offsetY || row >= lheader.offsetY + lheader.height ||
-                                col < lheader.offsetX || col >= lheader.offsetX + lheader.width)
-                        {
-                            // dummy vert using invalid height
-                            meshData.liquidVerts.append((xoffset + col * GRID_PART_SIZE) * -1, INVALID_MAP_LIQ_HEIGHT, (yoffset + row * GRID_PART_SIZE) * -1);
-                            continue;
-                        }
-
-                        getLiquidCoord(i, j, xoffset, yoffset, coord, liquid_map);
-                        meshData.liquidVerts.append(coord[0]);
-                        meshData.liquidVerts.append(coord[2]);
-                        meshData.liquidVerts.append(coord[1]);
-                        j++;
+                        // dummy vert using invalid height
+                        meshData.liquidVerts.append((xoffset + col * GRID_PART_SIZE) * -1, INVALID_MAP_LIQ_HEIGHT, (yoffset + row * GRID_PART_SIZE) * -1);
+                        continue;
                     }
+
+                    getLiquidCoord(i, j, xoffset, yoffset, coord, liquid_map);
+                    meshData.liquidVerts.append(coord[0]);
+                    meshData.liquidVerts.append(coord[2]);
+                    meshData.liquidVerts.append(coord[1]);
+                    j++;
                 }
-                else
-                {
-                    for (int i = 0; i < V9_SIZE_SQ; ++i)
-                    {
-                        row = i / V9_SIZE;
-                        col = i % V9_SIZE;
-                        meshData.liquidVerts.append((xoffset + col * GRID_PART_SIZE) * -1, lheader.liquidLevel, (yoffset + row * GRID_PART_SIZE) * -1);
-                    }
-                }
-
-                delete [] liquid_map;
-
-                int indices[3], loopStart, loopEnd, loopInc, triInc;
-                getLoopVars(portion, loopStart, loopEnd, loopInc);
-                triInc = BOTTOM - TOP;
-
-                // generate triangles
-                for (int i = loopStart; i < loopEnd; i += loopInc)
-                    for (int j = TOP; j <= BOTTOM; j += triInc)
-                    {
-                        getHeightTriangle(i, Spot(j), indices, true);
-                        ltriangles.append(indices[2] + count);
-                        ltriangles.append(indices[1] + count);
-                        ltriangles.append(indices[0] + count);
-                    }
+                delete[] liquid_map;
             }
+            else
+            {
+                for (int i = 0; i < V9_SIZE_SQ; ++i)
+                {
+                    row = i / V9_SIZE;
+                    col = i % V9_SIZE;
+                    meshData.liquidVerts.append((xoffset + col * GRID_PART_SIZE) * -1, lheader.liquidLevel, (yoffset + row * GRID_PART_SIZE) * -1);
+                }
+            }
+
+            int indices[3], loopStart, loopEnd, loopInc, triInc;
+            getLoopVars(portion, loopStart, loopEnd, loopInc);
+            triInc = BOTTOM - TOP;
+
+            // generate triangles
+            for (int i = loopStart; i < loopEnd; i += loopInc)
+                for (int j = TOP; j <= BOTTOM; j += triInc)
+                {
+                getHeightTriangle(i, Spot(j), indices, true);
+                ltriangles.append(indices[2] + count);
+                ltriangles.append(indices[1] + count);
+                ltriangles.append(indices[0] + count);
+                }
         }
 
         fclose(mapFile);
@@ -313,11 +314,11 @@ namespace MMAP
                 uint8 liquidType = MAP_LIQUID_TYPE_NO_WATER;
 
                 // if there is no liquid, don't use liquid
-                if (!liquid_type || !meshData.liquidVerts.size() || !ltriangles.size())
+                if (!meshData.liquidVerts.size() || !ltriangles.size())
                     useLiquid = false;
                 else
                 {
-                    liquidType = getLiquidType(i, liquid_type);
+                    liquidType = getLiquidType(i, liquidFlags);
                     switch (liquidType)
                     {
                         default:
@@ -614,7 +615,6 @@ namespace MMAP
                     int offset = meshData.solidVerts.size() / 3;
 
                     copyVertices(transformedVertices, meshData.solidVerts);
-                    copyIndices(tempTriangles, meshData.solidTris, offset, isM2);
 
                     // now handle liquid data
                     if (liquid)
@@ -633,16 +633,19 @@ namespace MMAP
                         // convert liquid type to NavTerrain
                         switch (liquid->GetType())
                         {
-                            case 0:
-                            case 1:
-                                type = NAV_WATER;
+                            case 13:                    // WMO water
+                            case 14:
+                                type = NAV_WATER;       // WMO ocean
                                 break;
-                            case 2:
-                                type = NAV_MAGMA;
+                            case 19:                    // WMO magma
+                                type = NAV_MAGMA;   
                                 break;
-                            case 3:
+                            case 20:                    // WMO slime
                                 type = NAV_SLIME;
                                 break;
+                            default:
+                                printf("Not convertible liquid type found (%u), default 'water' is assigned!\n", liquid->GetType());
+                                type = NAV_WATER;
                         }
 
                         // indexing is weird...
@@ -693,6 +696,47 @@ namespace MMAP
                             meshData.liquidTris.append(liqTris[i * 3 + 1] + liqOffset, liqTris[i * 3 + 2] + liqOffset, liqTris[i * 3] + liqOffset);
                             meshData.liquidType.append(type);
                         }
+
+                        // get max level of this liquid
+                        float maxLLevel = VMAP_INVALID_HEIGHT_VALUE;
+                        for (uint32 i = 0; i < liqTris.size(); ++i)
+                        {
+                            float h = liqVerts[liqTris[i]].z;
+
+                            if (maxLLevel < h)
+                                maxLLevel = h;
+                        }
+
+                        // now add only tris that are not under liquid TODO: double check if no regression like no navmesh in some zone under water
+                        for (uint32 i = 0; i < tempTriangles.size(); ++i)
+                        {
+                            float h = transformedVertices[tempTriangles[i].idx0].z;
+                            if (transformedVertices[tempTriangles[i].idx1].z > h)
+                                h = transformedVertices[tempTriangles[i].idx1].z;
+                            if (transformedVertices[tempTriangles[i].idx2].z > h)
+                                h = transformedVertices[tempTriangles[i].idx2].z;
+
+                            if (h > maxLLevel)
+                            {
+                                if (isM2)
+                                {
+                                    meshData.solidTris.push_back(tempTriangles[i].idx2 + offset);
+                                    meshData.solidTris.push_back(tempTriangles[i].idx1 + offset);
+                                    meshData.solidTris.push_back(tempTriangles[i].idx0 + offset);
+                                }
+                                else
+                                {
+                                    meshData.solidTris.push_back(tempTriangles[i].idx0 + offset);
+                                    meshData.solidTris.push_back(tempTriangles[i].idx1 + offset);
+                                    meshData.solidTris.push_back(tempTriangles[i].idx2 + offset);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // no liquid data then we can add all tris
+                        copyIndices(tempTriangles, meshData.solidTris, offset, isM2);
                     }
                 }
             }
