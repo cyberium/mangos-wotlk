@@ -42,6 +42,9 @@ class Unit;
 #define VERTEX_SIZE       3
 #define INVALID_POLYREF   0
 
+#define NAV_USABLE (NAV_GROUND | NAV_WATER | NAV_SLIME | NAV_MAGMA)
+#define NAV_LIQUID (NAV_WATER | NAV_SLIME | NAV_MAGMA)
+
 enum PathType
 {
     PATHFIND_BLANK          = 0x0000,   // path not built yet

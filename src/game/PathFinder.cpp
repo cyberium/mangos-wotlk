@@ -154,9 +154,20 @@ void PathFinder::BuildPolyPath(const Vector3& startPos, const Vector3& endPos)
     float distToStartPoly, distToEndPoly;
     float startPoint[VERTEX_SIZE] = {startPos.y, startPos.z, startPos.x};
     float endPoint[VERTEX_SIZE] = {endPos.y, endPos.z, endPos.x};
+    dtPolyRef startPoly = INVALID_POLYREF;
+    dtPolyRef endPoly = INVALID_POLYREF;
 
-    dtPolyRef startPoly = getPolyByLocation(startPoint, &distToStartPoly);
-    dtPolyRef endPoly = getPolyByLocation(endPoint, &distToEndPoly);
+    // test if far enough to build a path
+    if (dtVdist(startPoint, endPoint) < 3.0f)
+    {
+        DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ BuildPolyPath :: startPos and endPos are too close!");
+        BuildShortcut();
+        m_type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
+        return;
+    }
+
+    startPoly = getPolyByLocation(startPoint, &distToStartPoly);
+    endPoly = getPolyByLocation(endPoint, &distToEndPoly);
 
     dtStatus dtResult;
 
@@ -168,66 +179,14 @@ void PathFinder::BuildPolyPath(const Vector3& startPos, const Vector3& endPos)
         DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ BuildPolyPath :: (startPoly == 0 || endPoly == 0)\n");
         BuildShortcut();
 
-        if (m_sourceUnit->GetTypeId() == TYPEID_UNIT)
-        {
-            // Check for swimming or flying shortcut
-            if ((startPoly == INVALID_POLYREF && m_sourceUnit->GetTerrain()->IsUnderWater(startPos.x, startPos.y, startPos.z)) ||
-                    (endPoly == INVALID_POLYREF && m_sourceUnit->GetTerrain()->IsUnderWater(endPos.x, endPos.y, endPos.z)))
-                m_type = ((Creature*)m_sourceUnit)->CanSwim() ? PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH) : PATHFIND_NOPATH;
-            else
-                m_type = ((Creature*)m_sourceUnit)->CanFly() ? PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH) : PATHFIND_NOPATH;
-        }
-        else
-            m_type = PATHFIND_NOPATH;
+       // Check for swimming or flying shortcut
+       if ((startPoly == INVALID_POLYREF && m_sourceUnit->GetTerrain()->IsUnderWater(startPos.x, startPos.y, startPos.z)) ||
+               (endPoly == INVALID_POLYREF && m_sourceUnit->GetTerrain()->IsUnderWater(endPos.x, endPos.y, endPos.z)))
+           m_type = m_sourceUnit->CanSwim() ? PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH) : PATHFIND_NOPATH;
+       else
+           m_type = m_sourceUnit->CanFly() ? PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH) : PATHFIND_NOPATH;
 
         return;
-    }
-
-    // we may need a better number here
-    bool farFromPoly = (distToStartPoly > 7.0f || distToEndPoly > 7.0f);
-    if (farFromPoly)
-    {
-        DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ BuildPolyPath :: farFromPoly distToStartPoly=%.3f distToEndPoly=%.3f\n", distToStartPoly, distToEndPoly);
-
-        bool buildShotrcut = false;
-        if (m_sourceUnit->GetTypeId() == TYPEID_UNIT)
-        {
-            Creature* owner = (Creature*)m_sourceUnit;
-
-            Vector3 p = (distToStartPoly > 7.0f) ? startPos : endPos;
-            if (m_sourceUnit->GetTerrain()->IsUnderWater(p.x, p.y, p.z))
-            {
-                DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ BuildPolyPath :: underWater case\n");
-                if (owner->CanSwim())
-                    buildShotrcut = true;
-            }
-            else
-            {
-                DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ BuildPolyPath :: flying case\n");
-                if (owner->CanFly())
-                    buildShotrcut = true;
-            }
-        }
-
-        if (buildShotrcut)
-        {
-            BuildShortcut();
-            m_type = PathType(PATHFIND_NORMAL | PATHFIND_NOT_USING_PATH);
-            return;
-        }
-        else
-        {
-            float closestPoint[VERTEX_SIZE];
-            // we may want to use closestPointOnPolyBoundary instead
-            dtResult = m_navMeshQuery->closestPointOnPoly(endPoly, endPoint, closestPoint, NULL);
-            if (dtStatusSucceed(dtResult))
-            {
-                dtVcopy(endPoint, closestPoint);
-                setActualEndPosition(Vector3(endPoint[2], endPoint[0], endPoint[1]));
-            }
-
-            m_type = PATHFIND_INCOMPLETE;
-        }
     }
 
     // *** poly path generating logic ***
@@ -243,7 +202,7 @@ void PathFinder::BuildPolyPath(const Vector3& startPos, const Vector3& endPos)
         m_pathPolyRefs[0] = startPoly;
         m_polyLength = 1;
 
-        m_type = farFromPoly ? PATHFIND_INCOMPLETE : PATHFIND_NORMAL;
+        m_type = PathType(m_type | PATHFIND_NORMAL);
         DEBUG_FILTER_LOG(LOG_FILTER_PATHFINDING, "++ BuildPolyPath :: path type %d\n", m_type);
         return;
     }
@@ -697,8 +656,11 @@ dtStatus PathFinder::findSmoothPath(const float* startPos, const float* endPos,
         result[1] += 0.5f;
         dtVcopy(iterPos, result);
 
+        uint16 navTerrainFlag;
+        m_navMesh->getPolyFlags(polys[0], &navTerrainFlag);
+
         // Handle end of path and off-mesh links when close enough.
-        if (endOfPath && inRangeYZX(iterPos, steerPos, SMOOTH_PATH_SLOP, 1.0f))
+        if (endOfPath && (navTerrainFlag & NAV_LIQUID || inRangeYZX(iterPos, steerPos, SMOOTH_PATH_SLOP, 1.0f)))
         {
             // Reached end of path.
             dtVcopy(iterPos, targetPos);
@@ -744,6 +706,10 @@ dtStatus PathFinder::findSmoothPath(const float* startPos, const float* endPos,
                 iterPos[1] += 0.5f;
             }
         }
+
+        // no path on liquid, we use shortcut instead
+        if (navTerrainFlag & NAV_LIQUID)
+            continue;
 
         // Store results.
         if (nsmoothPath < maxSmoothPathSize)
