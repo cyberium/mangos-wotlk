@@ -66,7 +66,6 @@ namespace MMAP
                        bool skipJunkMaps        = true,
                        bool skipBattlegrounds   = false,
                        bool debugOutput         = false,
-                       bool bigBaseUnit         = false,
                        const char* offMeshFilePath = NULL);
 
             ~MapBuilder();
@@ -118,7 +117,6 @@ namespace MMAP
             bool m_skipBattlegrounds;
 
             float m_maxWalkableAngle;
-            bool m_bigBaseUnit;
 
             // build performance - not really used for now
             rcContext* m_rcContext;

@@ -70,7 +70,6 @@ void printUsage()
     printf("--skipJunkMaps [true|false] : junk maps include some unused\n");
     printf("--skipBattlegrounds [true|false] : does not include PVP arenas\n");
     printf("--debugOutput [true|false] : create debugging files for use with RecastDemo\n");
-    printf("--bigBaseUnit [true|false] : Generate tile/map using bigger basic unit.\n");
     printf("--silent : Make script friendly. No wait for user input, error, completion.\n");
     printf("--offMeshInput [file.*] : Path to file containing off mesh connections data.\n\n");
     printf("Exemple:\nmovemapgen (generate all mmap with default arg\n"
@@ -90,7 +89,6 @@ bool handleArgs(int argc, char** argv,
                 bool& skipBattlegrounds,
                 bool& debugOutput,
                 bool& silent,
-                bool& bigBaseUnit,
                 char*& offMeshInputPath)
 {
     char* param = NULL;
@@ -199,19 +197,6 @@ bool handleArgs(int argc, char** argv,
         {
             silent = true;
         }
-        else if (strcmp(argv[i], "--bigBaseUnit") == 0)
-        {
-            param = argv[++i];
-            if (!param)
-                return false;
-
-            if (strcmp(param, "true") == 0)
-                bigBaseUnit = true;
-            else if (strcmp(param, "false") == 0)
-                bigBaseUnit = false;
-            else
-                printf("invalid option for '--bigBaseUnit', using default false\n");
-        }
         else if (strcmp(argv[i], "--offMeshInput") == 0)
         {
             param = argv[++i];
@@ -251,21 +236,20 @@ int finish(const char* message, int returnValue)
 int main(int argc, char** argv)
 {
     int mapnum = -1;
-    float maxAngle = 60.0f;
+    float maxAngle = 50.0f;
     int tileX = -1, tileY = -1;
     bool skipLiquid = false,
          skipContinents = false,
          skipJunkMaps = true,
          skipBattlegrounds = false,
          debugOutput = false,
-         silent = false,
-         bigBaseUnit = false;
+         silent = false;
     char* offMeshInputPath = NULL;
 
     bool validParam = handleArgs(argc, argv, mapnum,
                                  tileX, tileY, maxAngle,
                                  skipLiquid, skipContinents, skipJunkMaps, skipBattlegrounds,
-                                 debugOutput, silent, bigBaseUnit, offMeshInputPath);
+                                 debugOutput, silent, offMeshInputPath);
 
     if (!validParam)
         return silent ? -1 : finish("You have specified invalid parameters (use -? for more help)", -1);
@@ -286,7 +270,7 @@ int main(int argc, char** argv)
         return silent ? -3 : finish("Press any key to close...", -3);
 
     MapBuilder builder(maxAngle, skipLiquid, skipContinents, skipJunkMaps,
-                       skipBattlegrounds, debugOutput, bigBaseUnit, offMeshInputPath);
+                       skipBattlegrounds, debugOutput, offMeshInputPath);
 
     if (tileX > -1 && tileY > -1 && mapnum >= 0)
         builder.buildSingleTile(mapnum, tileX, tileY);
