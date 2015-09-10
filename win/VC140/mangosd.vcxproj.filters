@@ -42,6 +42,7 @@
     <ClCompile Include="..\..\dep\src\gsoap\stdsoap2.cpp" />
     <ClCompile Include="..\..\src\shared\WheatyExceptionReport.cpp" />
     <ClCompile Include="..\..\src\mangosd\WorldRunnable.cpp" />
+    <ClCompile Include="..\..\src\mangosd\DatabaseSetting.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\mangosd\CliRunnable.h" />
@@ -53,6 +54,7 @@
     <ClInclude Include="..\..\dep\include\gsoap\stdsoap2.h" />
     <ClInclude Include="..\..\src\shared\WheatyExceptionReport.h" />
     <ClInclude Include="..\..\src\mangosd\WorldRunnable.h" />
+    <ClInclude Include="..\..\src\mangosd\DatabaseSetting.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\mangosd\mangosd.rc" />

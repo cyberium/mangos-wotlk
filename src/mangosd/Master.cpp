@@ -43,6 +43,7 @@
 #include "MaNGOSsoap.h"
 #include "MassMailMgr.h"
 #include "DBCStores.h"
+#include "DatabaseSetting.h"
 
 #include <ace/OS_NS_signal.h>
 #include <ace/TP_Reactor.h>
@@ -191,7 +192,7 @@ int Master::Run()
     }
 
     ///- Start the databases
-    if (!_StartDB())
+    if (!_StartDB() && !_SetingUpDB())
     {
         Log::WaitBeforeContinueIfNeed();
         return 1;
@@ -537,6 +538,24 @@ bool Master::_StartDB()
     sLog.outString("Using creature EventAI: %s", sWorld.GetCreatureEventAIVersion());
     sLog.outString();
     return true;
+}
+
+bool Master::_SetingUpDB()
+{
+    sLog.outString("Database initialization failed!");
+    sLog.outString("Do you want to start included db wizard to help you connect and update your db?");
+    char answer[5];
+    char* command_str = fgets(answer, sizeof(answer), stdin);
+    if (answer[0] != 'y' && answer[0] != 'Y')
+        return false;
+
+    DatabaseSetting dbConfig;
+
+    dbConfig.Start();
+    if (dbConfig.Complete())
+        return true;
+
+    return false;
 }
 
 /// Clear 'online' status for all accounts with characters in this realm

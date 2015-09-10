@@ -38,6 +38,7 @@ class Master
     private:
         bool _StartDB();
 
+        bool _SetingUpDB();
         void _HookSignals();
         void _UnhookSignals();
         static void _OnSignal(int s);
