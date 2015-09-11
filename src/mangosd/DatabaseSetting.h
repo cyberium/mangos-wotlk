@@ -1,6 +1,7 @@
 #ifndef _DATABASE_SETTING
 #define  _DATABASE_SETTING
 #pragma once
+#include <string>
 
 enum nextStep
 {
@@ -13,10 +14,20 @@ class DatabaseSetting
 {
 public:
     DatabaseSetting();
+    void ClearScreen();
     void Start();
     bool Complete();
     ~DatabaseSetting();
-    nextStep TryToConnectAsRoot();
+    bool GetUserInput(std::string &buffer);
+    nextStep SetDBCredential();
+    bool m_isRootCredential;
+    std::string m_WorldDBName;
+    std::string m_CharactersDBName;
+    std::string m_RealmDBName;
+    std::string m_serverAddress;
+    std::string m_serverPort;
+    std::string m_serverUserName;
+    std::string m_serverPassword;
 };
 #endif
 
