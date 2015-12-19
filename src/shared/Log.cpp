@@ -327,6 +327,7 @@ void Log::outTimestamp(FILE* file)
 
 void Log::outTime()
 {
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
     time_t t = time(nullptr);
     tm* aTm = localtime(&t);
     //       YYYY   year
@@ -355,6 +356,7 @@ std::string Log::GetTimestampStr()
 
 void Log::outString()
 {
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (m_includeTime)
         outTime();
     printf("\n");
@@ -372,6 +374,8 @@ void Log::outString(const char* str, ...)
 {
     if (!str)
         return;
+
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
 
     if (m_colored)
         SetColor(true, m_colors[LogNormal]);
@@ -410,6 +414,8 @@ void Log::outError(const char* err, ...)
     if (!err)
         return;
 
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
     if (m_colored)
         SetColor(false, m_colors[LogError]);
 
@@ -444,6 +450,8 @@ void Log::outError(const char* err, ...)
 
 void Log::outErrorDb()
 {
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
     if (m_includeTime)
         outTime();
 
@@ -470,6 +478,8 @@ void Log::outErrorDb(const char* err, ...)
 {
     if (!err)
         return;
+
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
 
     if (m_colored)
         SetColor(false, m_colors[LogError]);
@@ -519,6 +529,8 @@ void Log::outErrorDb(const char* err, ...)
 
 void Log::outErrorEventAI()
 {
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
     if (m_includeTime)
         outTime();
 
@@ -546,6 +558,7 @@ void Log::outErrorEventAI(const char* err, ...)
     if (!err)
         return;
 
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (m_colored)
         SetColor(false, m_colors[LogError]);
 
@@ -597,6 +610,7 @@ void Log::outBasic(const char* str, ...)
     if (!str)
         return;
 
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (m_logLevel >= LOG_LVL_BASIC)
     {
         if (m_colored)
@@ -635,6 +649,7 @@ void Log::outDetail(const char* str, ...)
     if (!str)
         return;
 
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (m_logLevel >= LOG_LVL_DETAIL)
     {
         if (m_colored)
@@ -675,6 +690,7 @@ void Log::outDebug(const char* str, ...)
     if (!str)
         return;
 
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (m_logLevel >= LOG_LVL_DEBUG)
     {
         if (m_colored)
@@ -715,6 +731,7 @@ void Log::outCommand(uint32 account, const char* str, ...)
     if (!str)
         return;
 
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (m_logLevel >= LOG_LVL_DETAIL)
     {
         if (m_colored)
@@ -777,6 +794,7 @@ void Log::outChar(const char* str, ...)
     if (!str)
         return;
 
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (charLogfile)
     {
         va_list ap;
@@ -791,6 +809,7 @@ void Log::outChar(const char* str, ...)
 
 void Log::outErrorScriptLib()
 {
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (m_includeTime)
         outTime();
 
@@ -821,6 +840,7 @@ void Log::outErrorScriptLib(const char* err, ...)
     if (!err)
         return;
 
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (m_colored)
         SetColor(false, m_colors[LogError]);
 
@@ -898,6 +918,8 @@ void Log::outWorldPacketDump(uint32 socket, uint32 opcode, char const* opcodeNam
 
 void Log::outCharDump(const char* str, uint32 account_id, uint32 guid, const char* name)
 {
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
+
     if (charLogfile)
     {
         fprintf(charLogfile, "== START DUMP == (account: %u guid: %u name: %s )\n%s\n== END DUMP ==\n", account_id, guid, name, str);
@@ -910,6 +932,7 @@ void Log::outRALog(const char* str, ...)
     if (!str)
         return;
 
+    std::lock_guard<std::mutex> guard(m_worldLogMtx);
     if (raLogfile)
     {
         va_list ap;
