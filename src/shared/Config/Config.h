@@ -22,6 +22,8 @@
 #include "Common.h"
 #include <Policies/Singleton.h>
 #include "Platform/Define.h"
+#include <mutex>
+#include "ace/SString.h"
 
 class ACE_Configuration_Heap;
 
@@ -44,6 +46,8 @@ class MANGOS_DLL_SPEC Config
 
     private:
 
+        bool GetValueHelper(ACE_Configuration_Heap* mConf, const char* name, ACE_TString& result);
+        std::mutex m_configLock;
         std::string mFilename;
         ACE_Configuration_Heap* mConf;
 };

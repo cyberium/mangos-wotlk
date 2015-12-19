@@ -20,13 +20,16 @@
 #include "ace/Configuration_Import_Export.h"
 
 #include "Policies/Singleton.h"
+#include <mutex>
 
 INSTANTIATE_SINGLETON_1(Config);
 
-static bool GetValueHelper(ACE_Configuration_Heap* mConf, const char* name, ACE_TString& result)
+bool Config::GetValueHelper(ACE_Configuration_Heap* mConf, const char* name, ACE_TString& result)
 {
     if (!mConf)
         return false;
+
+    std::lock_guard<std::mutex> guard(m_configLock);
 
     ACE_TString section_name;
     ACE_Configuration_Section_Key section_key;
