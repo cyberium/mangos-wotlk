@@ -155,7 +155,8 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
             updatetype = UPDATETYPE_CREATE_OBJECT2;
 
         // UPDATETYPE_CREATE_OBJECT2 for pets...
-        if (target->GetPetGuid() == GetObjectGuid())
+        Creature const* creature = m_objectTypeId == TYPEID_UNIT ? static_cast<Creature const*>(this) : nullptr;
+        if (creature && creature->IsControlledByPlayer())
             updatetype = UPDATETYPE_CREATE_OBJECT2;
 
         // UPDATETYPE_CREATE_OBJECT2 for some gameobject types...
