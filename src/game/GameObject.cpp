@@ -1268,6 +1268,7 @@ void GameObject::Use(Unit* user)
 
             // cast this spell later if provided
             spellId = info->goober.spellId;
+            triggered = true;
 
             // database may contain a dummy spell, so it need replacement by actually existing
             switch (spellId)
