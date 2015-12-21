@@ -1145,7 +1145,7 @@ class MANGOS_DLL_SPEC Unit : public WorldObject
         typedef std::map<SpellEntry const*, ObjectGuid /*targetGuid*/> TrackedAuraTargetMap;
 
         virtual ~Unit();
-
+        void ShowMoveFlags();
         void AddToWorld() override;
         void RemoveFromWorld() override;
 

@@ -183,6 +183,46 @@ void GlobalCooldownMgr::CancelGlobalCooldown(SpellEntry const* spellInfo)
 ////////////////////////////////////////////////////////////
 // Methods of class Unit
 
+void Unit::ShowMoveFlags()
+{
+    std::string flagsStr;
+    MovementFlags flags = m_movementInfo.GetMovementFlags();
+
+    if (flags & MOVEFLAG_FORWARD) flagsStr += " MOVEFLAG_FORWARD";
+    if (flags & MOVEFLAG_BACKWARD) flagsStr += " MOVEFLAG_BACKWARD";
+    if (flags & MOVEFLAG_STRAFE_LEFT) flagsStr += " MOVEFLAG_STRAFE_LEFT";
+    if (flags & MOVEFLAG_STRAFE_RIGHT) flagsStr += " MOVEFLAG_STRAFE_RIGHT";
+    if (flags & MOVEFLAG_TURN_LEFT) flagsStr += " MOVEFLAG_TURN_LEFT";
+    if (flags & MOVEFLAG_TURN_RIGHT) flagsStr += " MOVEFLAG_TURN_RIGHT";
+    if (flags & MOVEFLAG_PITCH_UP) flagsStr += " MOVEFLAG_PITCH_UP";
+    if (flags & MOVEFLAG_PITCH_DOWN) flagsStr += " MOVEFLAG_PITCH_DOWN";
+    if (flags & MOVEFLAG_WALK_MODE) flagsStr += " MOVEFLAG_WALK_MODE";
+    if (flags & MOVEFLAG_ONTRANSPORT) flagsStr += " MOVEFLAG_ONTRANSPORT";
+    if (flags & MOVEFLAG_LEVITATING) flagsStr += " MOVEFLAG_LEVITATING";
+    if (flags & MOVEFLAG_ROOT) flagsStr += " MOVEFLAG_ROOT";
+    if (flags & MOVEFLAG_FALLING) flagsStr += " MOVEFLAG_FALLING";
+    if (flags & MOVEFLAG_FALLINGFAR) flagsStr += " MOVEFLAG_FALLINGFAR";
+    if (flags & MOVEFLAG_PENDINGSTOP) flagsStr += " MOVEFLAG_PENDINGSTOP";
+    if (flags & MOVEFLAG_PENDINGSTRAFESTOP) flagsStr += " MOVEFLAG_PENDINGSTRAFESTOP";
+    if (flags & MOVEFLAG_PENDINGFORWARD) flagsStr += " MOVEFLAG_PENDINGFORWARD";
+    if (flags & MOVEFLAG_PENDINGBACKWARD) flagsStr += " MOVEFLAG_PENDINGBACKWARD";
+    if (flags & MOVEFLAG_PENDINGSTRAFELEFT) flagsStr += " MOVEFLAG_PENDINGSTRAFELEFT";
+    if (flags & MOVEFLAG_PENDINGSTRAFERIGHT) flagsStr += " MOVEFLAG_PENDINGSTRAFERIGHT";
+    if (flags & MOVEFLAG_PENDINGROOT) flagsStr += " MOVEFLAG_PENDINGROOT";
+    if (flags & MOVEFLAG_SWIMMING) flagsStr += " MOVEFLAG_SWIMMING";
+    if (flags & MOVEFLAG_ASCENDING) flagsStr += " MOVEFLAG_ASCENDING";
+    if (flags & MOVEFLAG_DESCENDING) flagsStr += " MOVEFLAG_DESCENDING";
+    if (flags & MOVEFLAG_CAN_FLY) flagsStr += " MOVEFLAG_CAN_FLY";
+    if (flags & MOVEFLAG_FLYING) flagsStr += " MOVEFLAG_FLYING";
+    if (flags & MOVEFLAG_SPLINE_ELEVATION) flagsStr += " MOVEFLAG_SPLINE_ELEVATION";
+    if (flags & MOVEFLAG_SPLINE_ENABLED) flagsStr += " MOVEFLAG_SPLINE_ENABLED";
+    if (flags & MOVEFLAG_WATERWALKING) flagsStr += " MOVEFLAG_WATERWALKING";
+    if (flags & MOVEFLAG_SAFE_FALL) flagsStr += " MOVEFLAG_SAFE_FALL";
+    if (flags & MOVEFLAG_HOVER) flagsStr += " MOVEFLAG_HOVER";
+
+    sLog.outDebug("MoveFlags (%s)", flagsStr.c_str());
+}
+
 Unit::Unit() :
     movespline(new Movement::MoveSpline()),
     m_charmInfo(nullptr),
