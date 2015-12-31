@@ -11345,6 +11345,7 @@ Unit* Unit::TakePossessOf(SpellEntry const* spellEntry, SummonPropertiesEntry co
     pCreature->SetUInt32Value(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER);
 
     pCreature->SelectLevel(getLevel());
+    pCreature->SetLinkedToOwnerAura(TEMPSUMMON_LINKED_AURA_OWNER | TEMPSUMMON_LINKED_AURA_REMOVE_OWNER);
 
     pCreature->SetWalk(IsWalking(), true);
 
