@@ -1402,7 +1402,7 @@ void Player::Update(uint32 update_diff, uint32 p_time)
     }
 
     // Not auto-free ghost from body in instances; also check for resurrection prevention
-    if (m_deathTimer > 0  && !GetMap()->Instanceable() && !HasAuraType(SPELL_AURA_PREVENT_RESURRECTION))
+    if (m_deathTimer > 0  && !GetMap()->Instanceable() && !HasAuraType(SPELL_AURA_PREVENT_RESURRECTION) && !IsGhouled())
     {
         if (p_time >= m_deathTimer)
         {
@@ -4471,6 +4471,10 @@ void Player::SetHover(bool enable)
 */
 void Player::BuildPlayerRepop()
 {
+    // case when player is ghouled (raise ally)
+    if (IsGhouled())
+        Uncharm();
+
     WorldPacket data(SMSG_PRE_RESURRECT, GetPackGUID().size());
     data << GetPackGUID();
     GetSession()->SendPacket(&data);
@@ -4522,6 +4526,10 @@ void Player::BuildPlayerRepop()
 
 void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 {
+    // case when player is ghouled (raise ally)
+    if (IsGhouled())
+        Uncharm();
+
     WorldPacket data(SMSG_DEATH_RELEASE_LOC, 4 * 4);        // remove spirit healer position
     data << uint32(-1);
     data << float(0);
@@ -20753,6 +20761,17 @@ uint32 Player::GetBaseWeaponSkillValue(WeaponAttackType attType) const
 
 void Player::ResurectUsingRequestData()
 {
+    if (m_resurrectToGhoul)
+    {
+        // we can cast raise ally spell
+        CastSpell(this, 46619, true);
+        ClearResurrectRequestData();
+        return;
+    }
+
+    if (IsGhouled())
+        Uncharm();
+
     /// Teleport before resurrecting by player, otherwise the player might get attacked from creatures near his corpse
     if (m_resurrectGuid.IsPlayer())
         TeleportTo(m_resurrectMap, m_resurrectX, m_resurrectY, m_resurrectZ, GetOrientation());
