@@ -166,6 +166,10 @@ int WorldSocket::SendPacket(const WorldPacket& pct)
     if (closing_)
         return -1;
 
+    sLog.SetColor(true, LMAGENTA);
+    printf("TO %s > %s\n", m_Session ? (m_Session->GetPlayer() ?  m_Session->GetPlayer()->GetName() : std::to_string(m_Session->GetAccountId()).c_str()) : "No session", pct.GetOpcodeName());
+    sLog.ResetColor(true);
+
     // Dump outgoing packet.
     sLog.outWorldPacketDump(uint32(get_handle()), pct.GetOpcode(), pct.GetOpcodeName(), &pct, false);
 
@@ -671,6 +675,10 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
     ACE_Auto_Ptr<WorldPacket> aptr(new_pct);
 
     const ACE_UINT16 opcode = new_pct->GetOpcode();
+
+    sLog.SetColor(true, LGREEN);
+    printf("FROM %s > %s\n", m_Session ? (m_Session->GetPlayer() ? m_Session->GetPlayer()->GetName() : std::to_string(m_Session->GetAccountId()).c_str()) : "No session", new_pct->GetOpcodeName());
+    sLog.ResetColor(true);
 
     if (opcode >= NUM_MSG_TYPES)
     {
