@@ -96,6 +96,10 @@ void WorldSocket::SendPacket(const WorldPacket& pct, bool immediate)
     if (IsClosed())
         return;
 
+    sLog.SetColor(true, LMAGENTA);
+    printf("TO %s > %s\n", m_session ? (m_session->GetPlayer() ? m_session->GetPlayer()->GetName() : std::to_string(m_session->GetAccountId()).c_str()) : "No session", pct.GetOpcodeName());
+    sLog.ResetColor(true);
+
     // Dump outgoing packet.
     sLog.outWorldPacketDump(GetRemoteEndpoint().c_str(), pct.GetOpcode(), pct.GetOpcodeName(), &pct, false);
 
@@ -193,6 +197,10 @@ bool WorldSocket::ProcessIncomingData()
         return false;
 
     WorldPacket *pct = new WorldPacket(opcode, validBytesRemaining);
+
+    sLog.SetColor(true, LGREEN);
+    printf("FROM %s > %s\n", m_session ? (m_session->GetPlayer() ? m_session->GetPlayer()->GetName() : std::to_string(m_session->GetAccountId()).c_str()) : "No session", pct->GetOpcodeName());
+    sLog.ResetColor(true);
 
     if (validBytesRemaining)
     {
