@@ -185,7 +185,8 @@ Unit::Unit() :
     m_regenTimer(0),
     m_vehicleInfo(nullptr),
     m_ThreatManager(this),
-    m_HostileRefManager(this)
+    m_HostileRefManager(this),
+    m_combatData(new CombatData(this))
 {
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
@@ -283,6 +284,7 @@ Unit::~Unit()
     delete m_charmInfo;
     delete m_vehicleInfo;
     delete movespline;
+    delete m_combatData;
 
     // those should be already removed at "RemoveFromWorld()" call
     MANGOS_ASSERT(m_gameObj.size() == 0);
@@ -6095,15 +6097,15 @@ bool Unit::CanAttackByItself() const
 
 void Unit::RemoveAllAttackers()
 {
-    while (!m_attackers.empty())
+    while (!m_combatData->attackers.empty())
     {
-        AttackerSet::iterator iter = m_attackers.begin();
+        AttackerSet::iterator iter = m_combatData->attackers.begin();
         (*iter)->AttackStop();
 
         if (m_attacking)
         {
             sLog.outError("WORLD: Unit has an attacker that isn't attacking it!");
-            m_attackers.erase(iter);
+            m_combatData->attackers.erase(iter);
         }
     }
 }
@@ -8826,7 +8828,7 @@ void Unit::SetDeathState(DeathState s)
         RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);  // clear skinnable for creature and player (at battleground)
     }
 
-    if (m_deathState != ALIVE && s == ALIVE)
+    if (s != ALIVE && s != JUST_ALIVED)
     {
         //_ApplyAllAuraMods();
     }
@@ -9109,7 +9111,7 @@ bool Unit::SelectHostileTarget()
     // Note: creature not have targeted movement generator but have attacker in this case
     if (GetMotionMaster()->GetCurrentMovementGeneratorType() != CHASE_MOTION_TYPE)
     {
-        for (AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
+        for (AttackerSet::const_iterator itr = m_combatData->attackers.begin(); itr != m_combatData->attackers.end(); ++itr)
         {
             if ((*itr)->IsInMap(this) && (*itr)->isTargetableForAttack() && (*itr)->isInAccessablePlaceFor((Creature*)this))
                 return false;
