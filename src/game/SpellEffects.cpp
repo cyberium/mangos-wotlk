@@ -5438,7 +5438,7 @@ void Spell::EffectSummonType(SpellEffectIndex eff_idx)
         uint32 resultLevel = level + std::max(m_spellInfo->EffectMultipleValue[eff_idx], 1.0f);
 
         // result level should be a possible level for creatures
-        if (resultLevel > 0 && resultLevel < DEFAULT_MAX_CREATURE_LEVEL)
+        if (resultLevel > 0 && resultLevel <= DEFAULT_MAX_CREATURE_LEVEL)
             level = resultLevel;
     }
     // level of creature summoned using engineering item based at engineering skill level
