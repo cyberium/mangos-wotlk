@@ -683,6 +683,7 @@ ChatCommand* ChatHandler::getCommandTable()
         { "motd",           SEC_PLAYER,         true,  &ChatHandler::HandleServerMotdCommand,          "", nullptr },
         { "plimit",         SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerPLimitCommand,        "", nullptr },
         { "resetallraid",   SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerResetAllRaidCommand,  "", nullptr },
+        { "resetalldungeon", SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleServerResetAllDungeonCommand, "", nullptr },
         { "restart",        SEC_ADMINISTRATOR,  true,  nullptr,                                           "", serverRestartCommandTable },
         { "shutdown",       SEC_ADMINISTRATOR,  true,  nullptr,                                           "", serverShutdownCommandTable },
         { "set",            SEC_ADMINISTRATOR,  true,  nullptr,                                           "", serverSetCommandTable },

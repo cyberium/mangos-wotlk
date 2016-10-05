@@ -298,6 +298,7 @@ class MANGOS_DLL_SPEC ChatHandler
         bool HandleInstanceUnbindCommand(char* args);
         bool HandleInstanceStatsCommand(char* args);
         bool HandleInstanceSaveDataCommand(char* args);
+        bool HandleServerResetAllDungeonCommand(char* /*arg*/);
 
         bool HandleLearnCommand(char* args);
         bool HandleLearnAllCommand(char* args);

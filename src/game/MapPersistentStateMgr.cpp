@@ -611,6 +611,27 @@ void DungeonResetScheduler::ResetAllRaid()
     m_resetTimeQueue = rTQ;
 }
 
+void DungeonResetScheduler::ResetAllDungeon()
+{
+    time_t now = time(nullptr);
+    ResetTimeQueue rTQ;
+    rTQ.clear();
+
+    for (ResetTimeQueue::iterator itr = m_resetTimeQueue.begin(); itr != m_resetTimeQueue.end(); ++itr)
+    {
+        DungeonResetEvent& event = itr->second;
+
+        // we only reset normal dungeon
+        if (event.type != RESET_EVENT_NORMAL_DUNGEON)
+        {
+            rTQ.insert(std::pair<time_t, DungeonResetEvent>(itr->first, event));
+            continue;
+        }
+        rTQ.insert(std::pair<time_t, DungeonResetEvent>(now, event));
+    }
+    m_resetTimeQueue = rTQ;
+}
+
 //== MapPersistentStateManager functions =========================
 
 MapPersistentStateManager::MapPersistentStateManager() : lock_instLists(false), m_Scheduler(*this)

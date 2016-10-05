@@ -322,6 +322,8 @@ class DungeonResetScheduler
         void Update();
 
         void ResetAllRaid();
+        void ResetAllDungeon();
+
     private:                                                // fields
         MapPersistentStateManager& m_InstanceSaves;
 

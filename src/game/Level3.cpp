@@ -6595,6 +6595,12 @@ bool ChatHandler::HandleInstanceSaveDataCommand(char* /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleServerResetAllDungeonCommand(char* /*arg*/)
+{
+    sMapPersistentStateMgr.GetScheduler().ResetAllDungeon();
+    return true;
+}
+
 /// Display the list of GMs
 bool ChatHandler::HandleGMListFullCommand(char* /*args*/)
 {
